@@ -1,6 +1,6 @@
 ######################## Explore LAGOS Network data ###########################################
 #- Date: 10-29-20
-# updated:
+# updated: 11-4-20
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -23,6 +23,10 @@ lakes_1ha_all_pts <- shapefile("C:/Ian_GIS/LAGOS_US_GIS/LAGOS_US_All_lakes_1ha_p
 states_shp <- shapefile("Data/lower48/lower48.shp")
 states_shp <- spTransform(states_shp, CRSobj=crs(lakes_1ha_all_pts))
 
+# LAGOS-US LOCUS
+lake_char <- read.csv("C:/Users/FWL/Dropbox/CL_LAGOSUS_exports/LAGOSUS_LOCUS/LOCUS_v1.0/lake_characteristics.csv")
+lake_info <- read.csv("C:/Users/FWL/Dropbox/CL_LAGOSUS_exports/LAGOSUS_LOCUS/LOCUS_v1.0/lake_information.csv")
+
 ################### Main program ######################
 
 hist(unidirectional$Total_Length_KM)
@@ -37,7 +41,10 @@ total_dist_summary <- unidirectional %>%
 
 summary(total_dist_summary)
 
-hist(total_dist_summary$nLakes)
+hist(total_dist_summary$nLakes, main='Number of network-connected lakes', xlab='Number of lakes',
+     breaks=seq(0,7500,10), xlim=c(0,1000))
+nrow(subset(total_dist_summary, nLakes < 10))/nrow(total_dist_summary)
+
 hist(total_dist_summary$min, main='Distance to nearest lake, any direction (km)', xlab='km',
      breaks=seq(0,2500,50), ylim=c(0,55000))
 
@@ -85,3 +92,23 @@ nearest_downstream_lake_points
 dsnname <- "C:/Users/FWL/Documents/TripleC/Data/nearest_downstream_dist"
 layername <- "nearest_downstream_dist"
 #writeOGR(downstream_dist_pts_shp, dsn=dsnname, layer=layername, driver="ESRI Shapefile", overwrite_layer = T)
+
+## By lake connectivity class?
+lake_conn_fluctuate <- subset(lake_char, lake_connectivity_fluctuates=='Y')[,1]
+
+lake_conn_fluctuate_counts <- lake_char %>%
+  group_by(lake_connectivity_fluctuates) %>%
+  summarize(nLakes=n())
+
+lake_conn_variables <- lake_char[,c(1,15,16,17)]
+lake_conn_variables$lake_connectivity_class <- as.factor(lake_conn_variables$lake_connectivity_class)
+lake_conn_variables$lake_connectivity_fluctuates <- as.factor(lake_conn_variables$lake_connectivity_fluctuates)
+lake_conn_variables$lake_connectivity_permanent <- as.factor(lake_conn_variables$lake_connectivity_permanent)
+
+total_dist_summary_conn <- merge(total_dist_summary, lake_conn_variables, by.x='lagoslakeid_1',by.y='lagoslakeid')
+
+boxplot(total_dist_summary_conn$min ~ total_dist_summary_conn$lake_connectivity_fluctuates, xlab='Fluctuating connectivity',
+        ylab='Distance (km)', main='Distance to nearest lake, any direction')
+
+boxplot(total_dist_summary_conn$min ~ total_dist_summary_conn$lake_connectivity_permanent, xlab='Permanent connectivity class',
+        ylab='Distance (km)', main='Distance to nearest lake, any direction')
