@@ -1,7 +1,7 @@
 ######################## Explore LAGOS Network data ###########################################
 #- Date: 05-NOV-2020
 # updated: 
-# Author: Katelyn King
+# Author: Katelyn King, Patrick Hanley 
 ################################################################################################
 
 setwd("C:/Users/FWL/Documents/TripleC")
@@ -43,11 +43,7 @@ hist(networks$net_dams_n, xlim=c(0, 2000), breaks=100, main='# dams in a network
 
 #### try to stack dist #### 
 
-#join and only keep down dist, the up dist is just mirror image
-dist<-left_join(unidirectional, nets, by = c("lagoslakeid_1" = "lagoslakeid")) %>%
-            filter(Down_Length_KM > 0)
-
-#create a test dataset for code 
+#* create a test dataset for code 
 test_dat <- data.frame(
   Lake1 = c("A", "B", "C", "C"),
   Lake2 = c("B", "C", "D", "E"),
@@ -58,5 +54,13 @@ test_dat <- data.frame(
 test_graph = graph_from_data_frame(test_dat, directed = FALSE)
 plot(test_graph, vertex.size=40, edge.width=5*edge.attributes(test_graph)[["Dist"]])
 distances(test_graph, weights = test_dat$Dist, mode="out")
- 
 
+
+# example using Patrick's code
+#join and only keep down dist, the up dist is just mirror image
+dist<-left_join(unidirectional, nets, by = c("lagoslakeid_1" = "lagoslakeid")) %>%
+  filter(Down_Length_KM > 0)
+
+target_network <-filter(dist, net_id == 6)
+target_graph = graph_from_data_frame(target_network, directed = FALSE)
+target_dist_mat <- distances(target_graph, weights = target_network$Total_Length_KM, mode="out")
