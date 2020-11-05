@@ -11,9 +11,7 @@ library(dplyr)
 library(raster)
 library(ggplot2)
 library(rgdal)
-# install.packages("devtools")
-devtools::install_github("kylebittinger/usedist")
-library(usedist)
+library(igraph) #distance table and fun figures 
 
 #### Input data ####
 # network data
@@ -57,10 +55,8 @@ test_dat <- data.frame(
 )
 
 
-data_matrix <- pivot_to_numeric_matrix(
-  test_dat, Lake1, Lake2, Dist)
-
-
-
+test_graph = graph_from_data_frame(test_dat, directed = FALSE)
+plot(test_graph, vertex.size=40, edge.width=5*edge.attributes(test_graph)[["Dist"]])
+distances(test_graph, weights = test_dat$Dist, mode="out")
  
 
