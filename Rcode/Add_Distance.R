@@ -57,10 +57,13 @@ distances(test_graph, weights = test_dat$Dist, mode="out")
 
 
 # example using Patrick's code
-#join and only keep down dist, the up dist is just mirror image
-dist<-left_join(unidirectional, nets, by = c("lagoslakeid_1" = "lagoslakeid")) %>%
-  filter(Down_Length_KM > 0)
+target_network <- 6
 
-target_network <-filter(dist, net_id == 6)
-target_graph = graph_from_data_frame(target_network, directed = FALSE)
-target_dist_mat <- distances(target_graph, weights = target_network$Total_Length_KM, mode="out")
+targets <- nets[nets$net_id==target_network,]$lagoslakeid
+length(targets)
+
+lakenet_targets <- unidirectional[unidirectional$lagoslakeid_1 %in% targets,]
+
+target_graph = graph_from_data_frame(lakenet_targets, directed = FALSE)
+target_dist_mat <- distances(target_graph, weights = lakenet_targets$Total_Length_KM, mode="out")
+
