@@ -1,6 +1,6 @@
 ######################## Explore LAGOS Network data ###########################################
 #- Date: 10-29-20
-# updated: 11-4-20
+# updated: 11-9-20
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -11,10 +11,15 @@ library(dplyr)
 library(raster)
 library(ggplot2)
 library(rgdal)
+library(vegan)
+library(factoextra)
 
 #### Input data ####
 # network data
 unidirectional <- read.csv("Data/Networks/LAGOSUS_NETSv1.0_MedRes_UniDirectionalDist.csv")
+metrics_dams <- read.csv("Data/Networks/LAGOSUS_NETSv1.0_MedRes_Metrics_Dams.csv")
+
+network_metrics <- read.csv("Data/Networks/lagosnet_metrics.csv") #from Patrick
 
 # lake points
 lakes_1ha_all_pts <- shapefile("C:/Ian_GIS/LAGOS_US_GIS/LAGOS_US_All_lakes_1ha_pts_v0.5.shp")
@@ -112,3 +117,76 @@ boxplot(total_dist_summary_conn$min ~ total_dist_summary_conn$lake_connectivity_
 
 boxplot(total_dist_summary_conn$min ~ total_dist_summary_conn$lake_connectivity_permanent, xlab='Permanent connectivity class',
         ylab='Distance (km)', main='Distance to nearest lake, any direction')
+
+
+######## Exploring metrics/dams dataset ########
+# What have we here?
+hist(metrics_dams$lake_net_upstreamlake_km)
+hist(metrics_dams$lake_net_downstreamlake_km)
+hist(metrics_dams$lake_net_bidirectionallake_km)
+hist(metrics_dams$lake_net_upstreamlake_n)
+hist(metrics_dams$lake_net_downstreamlake_n)
+hist(metrics_dams$lake_net_lakeorder)
+hist(metrics_dams$lake_net_lnn)
+hist(metrics_dams$net_lakes_n)
+hist(metrics_dams$net_averagelakedistance_km)
+hist(metrics_dams$net_averagelakearea_ha)
+hist(metrics_dams$lake_net_nearestdamdown_km)
+hist(metrics_dams$lake_net_totaldamdown_n)
+hist(metrics_dams$lake_net_nearestdamup_km)
+hist(metrics_dams$lake_net_totaldamup_n)
+hist(metrics_dams$net_dams_n)
+
+# retain numeric columns only + net_id
+metrics_dams_keep <- metrics_dams[,c(1:13,15:16,18,21)]
+# without MS river basin lakes
+metrics_dams_keep_noMS <- subset(metrics_dams_keep, net_id > 1)
+
+cor(metrics_dams_keep, method='pearson', use="pairwise.complete.obs")
+cor(metrics_dams_keep_noMS, method='pearson', use="pairwise.complete.obs")
+
+## PCA
+pca_metrics_noMS <- princomp(~ lake_net_upstreamlake_km + lake_net_downstreamlake_km + lake_net_bidirectionallake_km +
+                               lake_net_upstreamlake_n + lake_net_downstreamlake_n + lake_net_lakeorder + 
+                               lake_net_lnn + net_lakes_n + net_averagelakedistance_km + net_averagelakearea_ha +
+                               lake_net_nearestdamdown_km + lake_net_totaldamdown_n + lake_net_nearestdamup_km +
+                               lake_net_totaldamup_n + net_dams_n,
+                      data=metrics_dams_keep_noMS, cor=T, scores=T)
+par(mfrow=c(1,1))
+screeplot(pca_metrics_noMS, type='l')
+summary(pca_metrics_noMS)
+loadings(pca_metrics_noMS)
+eigenvals(pca_metrics_noMS)
+
+#help from: http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/118-principal-component-analysis-in-r-prcomp-vs-princomp/
+fviz_pca_var(pca_metrics_noMS,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+)
+
+
+### Network metrics from Patrick
+cor(network_metrics, method='pearson', use='pairwise.complete.obs')
+
+network_metrics_noMS <- subset(network_metrics, net_id > 1) #get rid of MS river basin
+cor(network_metrics_noMS, method='pearson', use='pairwise.complete.obs')
+
+pca_network_noMS <- princomp(~ vertices_count + edges_count + artic_count +
+                                max_cliques + mean_degree_norm + far_vert_2 + far_vert_dist + edge_conn +
+                                edge_dens + min_cut + far_min_cut + strength,
+                              data=network_metrics_noMS, cor=T, scores=T)
+
+par(mfrow=c(1,1))
+screeplot(pca_network_noMS, type='l')
+summary(pca_network_noMS)
+loadings(pca_network_noMS)
+eigenvals(pca_network_noMS)
+
+#help from: http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/118-principal-component-analysis-in-r-prcomp-vs-princomp/
+fviz_pca_var(pca_network_noMS,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+)
+
