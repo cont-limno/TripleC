@@ -1,6 +1,6 @@
 ######################## Climate of LAGOS Networks #############################################
 # Date: 1-6-21
-# updated:
+# updated: 1-7-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -12,7 +12,7 @@ setwd("C:/Users/FWL/Documents/TripleC")
 networks <- read.csv("Data/Networks/nets_networkmetrics_medres.csv") #export v1
 #climate_19812010 <- read.csv("C:/Users/FWL/Documents/ClimateExposure/Data/AdaptWest/AdaptWest_bioclim_1981_2010.csv")
 koppen_class <- read.csv("C:/Users/FWL/Documents/ClimateExposure/Data/AdaptWest/all_periods_class_only.csv")
-
+networks_geo <- read.csv("Data/Networks/lagosnet_geo.csv")
 
 ######### Main program ###########
 # determine Koppen climate class change for each lagoslakeid
@@ -125,3 +125,18 @@ plot(network_Koppen_summary_noMS$nLakes ~ network_Koppen_summary_noMS$RCP45_2050
 plot(network_Koppen_summary_noMS$nLakes ~ network_Koppen_summary_noMS$RCP45_2080s_changed_pct, main='RCP 4.5, 2080s', ylab='n lakes', xlab='Proportion of lakes in network that shift Koppen class')
 plot(network_Koppen_summary_noMS$nLakes ~ network_Koppen_summary_noMS$RCP85_2050s_changed_pct, main='RCP 8.5, 2050s', ylab='n lakes', xlab='Proportion of lakes in network that shift Koppen class')
 plot(network_Koppen_summary_noMS$nLakes ~ network_Koppen_summary_noMS$RCP85_2080s_changed_pct, main='RCP 8.5, 2080s', ylab='n lakes', xlab='Proportion of lakes in network that shift Koppen class')
+
+## latitudinal breadth of networks
+summary(networks_geo$min_cut_lat)
+summary(networks_geo$maxlat_dist)
+
+par(mfrow=c(1,1))
+hist(networks_geo$min_cut_lat, xlab='min_cut_lat', main='Min # of cuts to disconnect max latitudinal breadth of network')
+
+networks_geo_min10_cut_lat <- subset(networks_geo, min_cut_lat <= 10)
+
+hist(networks_geo_min10_cut_lat$min_cut_lat, xlab='min_cut_lat', main='Min # of cuts to disconnect max latitudinal breadth of network')
+mtext(side=3, 'min_cut_lat <=10; 95% of networks')
+summary(networks_geo_min10_cut_lat$min_cut_lat)
+
+hist(networks_geo$maxlat_dist, xlab='maxlat_dist', main='Maximum latitudinal breadth of networks')
