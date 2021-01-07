@@ -99,6 +99,17 @@ hist(network_Koppen_summary$hist_unique, main='Historical (1981-2010)', xlab='Un
 hist(network_Koppen_summary$RCP85_2050s_unique, main='RCP 8.5, 2050s', xlab='Unique Koppen classes', ylim=c(0,900), xlim=c(0,15))
 hist(network_Koppen_summary$RCP85_2080s_unique, main='RCP 8.5, 2080s', xlab='Unique Koppen classes', ylim=c(0,900), xlim=c(0,15))
 
+# change in number of Koppen classes from historical to future periods
+network_Koppen_summary$uniq_loss_RCP85_2080s <- network_Koppen_summary$hist_unique - network_Koppen_summary$RCP85_2080s_unique
+network_Koppen_summary$uniq_loss_RCP45_2080s <- network_Koppen_summary$hist_unique - network_Koppen_summary$RCP45_2080s_unique
+network_Koppen_summary$uniq_loss_RCP45_2050s <- network_Koppen_summary$hist_unique - network_Koppen_summary$RCP45_2050s_unique
+network_Koppen_summary$uniq_loss_RCP85_2050s <- network_Koppen_summary$hist_unique - network_Koppen_summary$RCP85_2050s_unique
+
+hist(network_Koppen_summary$uniq_loss_RCP45_2050s, main='Change in number of Koppen climates', xlab='RCP 4.5, 2050s', xlim=c(-5,5), ylim=c(0,800), breaks=seq(-5,5,1))
+hist(network_Koppen_summary$uniq_loss_RCP45_2080s, main='Change in number of Koppen climates', xlab='RCP 4.5, 2080s', xlim=c(-5,5), ylim=c(0,800), breaks=seq(-5,5,1))
+hist(network_Koppen_summary$uniq_loss_RCP85_2050s, main='Change in number of Koppen climates', xlab='RCP 8.5, 2050s', xlim=c(-5,5), ylim=c(0,800), breaks=seq(-5,5,1))
+hist(network_Koppen_summary$uniq_loss_RCP85_2080s, main='Change in number of Koppen climates', xlab='RCP 8.5, 2080s', xlim=c(-5,5), ylim=c(0,800), breaks=seq(-5,5,1))
+
 # What if remove MS river network?
 network_Koppen_summary_noMS <- subset(network_Koppen_summary, net_id > 1)
 
