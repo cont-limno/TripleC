@@ -14,20 +14,23 @@ library(mapdata)
 
 #### Input data ####
 #LAGOS_NETWORKS_v1
-lagos_networks_all <- read.csv("Data/Networks/LAGOSUS_NETSv1.0_MedRes_Metrics_Dams.csv") %>%
-  dplyr::select(lagoslakeid, net_id, net_lakes_n, net_averagelakedistance_km, net_averagelakearea_ha) #all lakes
+lagos_networks_all <- read.csv("Data/Networks/nets_networkmetrics_medres.csv") %>%
+  dplyr::select(lagoslakeid, net_id, net_lakes_n, net_averagelakedistance_km, net_averagelakearea_ha, net_dams_n, lake_nets_lnn, lake_nets_lakeorder ) #all lakes
 lagos_networks<-lagos_networks_all[!duplicated(paste(lagos_networks_all$net_id)),] #just network data
 #graph network metrics 
 graph_networks<- read.csv("Data/Networks/lagosnet_metrics.csv")
 #metrics with geo location 
 graph_geo<- read.csv("Data/Networks/lagosnet_geo.csv")
+
 #bidirectional dist table - version 7Dec2020
 bidir<-read.csv("/Users/katelynking/Desktop/Conny Network/med_res_complete/flowtable and distance/nets__binetworkdistance_medres.csv") %>%
   dplyr::select(binet_lagoslakeid1, binet_lagoslakeid2, binet_streamlength_total_km)
 #downloaded from dropbox on 4Nov2020 version from 29May2020
 lake_info<-read.csv( "/Users/katelynking/Desktop/Cont Limno/LAGOS_US/lake_information.csv") %>% 
   dplyr::select(lagoslakeid, lake_lat_decdeg, lake_lon_decdeg) 
-
+#lake_characteristics 
+lake_char<-read.csv( "/Users/katelynking/Desktop/Cont Limno/LAGOS_US/lake_characteristics.csv") %>% 
+  dplyr::select(lagoslakeid, lake_totalarea_ha) 
 
 ################### Main program ######################
 
@@ -48,6 +51,7 @@ distances(test_graph, weights = test_dat$Dist, mode="out")
 #remove mississippi 
 lagos_net_sub<-filter(lagos_networks, net_id != 1)
 graph_net_sub<-filter(graph_networks, net_id !=1) 
+graph_geo_sub<-filter(graph_geo, net_id !=1) 
 
 #Number of edges in network = number of streams 
 hist(graph_net_sub$edges_count)
@@ -55,11 +59,43 @@ hist(graph_net_sub$edges_count)
 hist(lagos_net_sub$net_lakes_n)
 plot(log(graph_networks$vertices_count), log(graph_networks$edges_count))
 
-#Avg dist between lakes (within network)
+#*Avg dist between lakes (within network) ####
 hist(lagos_net_sub$net_averagelakedistance_km)
+hist(log(lagos_net_sub$net_averagelakedistance_km))
 
-#distance to lake of similar size class 
-#node density within network
+#distance to lake of similar size class ?
+
+#*node density within network # note the Mississippi is not in here ####
+graph_net_sub$desn_NS<-graph_net_sub$vertices_count /graph_geo_sub$maxkmNS
+hist(graph_net_sub$desn_NS)
+graph_net_sub$dens_EW<-graph_net_sub$vertices_count /graph_geo_sub$maxkmEW
+hist(graph_net_sub$dens_EW)
+plot(log(graph_net_sub$desn_NS),log(graph_net_sub$dens_EW))
+
+#* average Lake Order per network ####
+hist(lagos_networks_all$lake_net_lakeorder)
+net_avgorder<-plyr::ddply(lagos_networks_all, "net_id", summarize,  net_avgorder=round(mean(lake_nets_lakeorder, na.rm=TRUE)) )
+net_minorder<-plyr::ddply(lagos_networks_all, "net_id", summarize,  net_minorder=round(min(lake_nets_lakeorder, na.rm=TRUE)) )
+net_maxorder<-plyr::ddply(lagos_networks_all, "net_id", summarize,  net_maxorder=round(max(lake_nets_lakeorder, na.rm=TRUE)) )
+
+net_order <-left_join(net_avgorder, net_maxorder) %>%
+  left_join(net_minorder)
+net_order$net_rangeorder<-net_order$net_maxorder - net_order$net_minorder
+
+lagos_net<-select(lagos_networks, net_id, net_lakes_n, net_averagelakedistance_km, net_averagelakearea_ha, net_dams_n)
+network_scale_metrics<-left_join(lagos_net, net_order) %>%
+                            left_join(graph_networks) %>%
+                             left_join(graph_geo)
+
+write.csv(network_scale_metrics, "Data/Networks/network_scale_metrics.csv", row.names = FALSE)
+hist(net_avgorder$net_avgorder)
+lagos_networks_plus<-left_join(lagos_networks, net_avgorder)
+plot(lagos_networks_plus$net_avgorder,lagos_networks_plus$net_averagelakearea_ha)
+plot(lagos_networks_plus$net_avgorder,log(lagos_networks_plus$net_averagelakearea_ha))
+
+# average LNN per network 
+net_avglnn<-plyr::ddply(lagos_networks_all, "net_id", summarize,  net_avglnn=round(mean(lake_nets_lnn)) )
+hist(net_avglnn$net_avglnn)
 
 #*graph visuals ####
 # using igraph package 
