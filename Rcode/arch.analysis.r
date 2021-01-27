@@ -1,7 +1,123 @@
+##################### Archetype analysis of LAGOS network data #################################
+# Date: 1-27-21
+# updated:
+# Author: Ian McCullough, immccull@gmail.com, with help from Ty and Ephraim
+################################################################################################
+
 setwd("C:/Users/FWL/Documents/TripleC")
 
+#### R libraries ####
+library(archetypes)
+library(dplyr)
 
-class.data=read.csv("Data/classvars_v2_6JAN21.csv")
+#### Input data ####
+networks <- read.csv("Data/Networks/network_scale_metrics.csv")
+
+####################### Main program ###################3
+# Select network variables for clustering
+dat <- networks %>%
+    dplyr::select(net_id, edge_dens, artic_count, min_cut_lat, maxkmNS, net_lakes_n,
+                  net_averagelakedistance_km, net_rangeorder)
+
+# Remove 1 NA value
+dat <- dat %>% filter(!is.na(maxkmNS))
+
+# Add row names
+row.names(dat) <- dat$net_id
+
+# Remove net_id
+dat <- dat[,-1]
+
+# Standardize variables
+arch_dat <- scale(dat)
+
+# here goes...
+fit=stepArchetypes(arch_dat,k=1:6,nrep=3,verbose=T)
+screeplot(fit,lwd=3,cex=3,pch=20,main="Choosing Number of Archetypes")
+
+fit5=bestModel(fit[[5]])
+fit5$archetypes
+
+
+## PLOTS FOR 5 ARCHETYPE FIT
+##
+
+predVals=predict(fit5,newdata=arch_dat)
+## re-ordering archetypes by popularity
+idx.high.to.low=sort(apply(predVals,2,mean),decreasing=TRUE,index.return=TRUE)$ix
+predVals=predVals[,idx.high.to.low]
+archetypes=fit5$archetypes[idx.high.to.low,]
+colnames(predVals) <- c("w.arch1","w.arch2","w.arch3","w.arch4","w.arch5")
+str(predVals)
+cd=cbind(arch_dat,predVals)
+head(cd)
+summary(cd)
+
+arch.scaled=archetypes
+cd.scaled=arch_dat
+##
+for(i in 1:ncol(arch_dat)){
+    arch.scaled[,i-1]=(arch.scaled[,i-1]-min(cd.scaled[,i]))/(max(cd.scaled[,i])-min(cd.scaled[,i]))
+    cd.scaled[,i]=(cd.scaled[,i]-min(cd.scaled[,i]))/(max(cd.scaled[,i])-min(cd.scaled[,i]))
+}
+names.items=c("edge_dens","artic_count","min_cut_lat","maxkmNS","net_lakes_n","net_averagelakedistance_km","net_rangeorder")
+names(cd.scaled)=names.items
+colnames(arch.scaled)=names.items
+
+boxplot(cd.scaled, ylim=c(0,4))
+for(i in 1:nrow(arch.scaled)){
+    points(arch.scaled[i,],col=i+1,type="b",lwd=4,pch=i+1,lty=1,cex=2)
+}
+#legend(x=0,y=3.95,legend=c("A1 ","A2","A3","A4","A5"),col=2:6,lwd=4,pch=2:6,cex=2,bg=grey(.95))
+#savePlot("archetypes-20210113.jpg")
+
+boxplot(cd[,8:12],col=2:6,names=c("A1","A2","A3","A4","A5"),main="Weights of each Archetype (boxplots of estimated weights in all networks)")
+savePlot("weights.boxplot.jpg")
+apply(cd[,8:12],2,mean)
+
+#aa.results <- list(cd=cd,archetypes=archetypes)
+#save(aa.results,file="aa.results6-20210113.Rdata")
+
+
+str(cd)
+
+
+lake.col=rep(NA,ncol(cd))
+for(i in 1:5){
+    idx=which(predVals[,i]>.5)
+    lake.col[idx]=i+1
+}
+summary(lake.col)
+plot(cd[,7:6],pch=20,cex=.5,col=lake.col)
+savePlot("allarch.jpg")
+
+par(mfrow=c(2,3))
+for(i in 1:6){
+    plot(cd[,7:6],pch=".",cex=.5,main=paste("arch ",i),col=grey(.95))
+    idx=which(predVals[,i]>.5)
+    points(cd[idx,7:6],pch=20,cex=0.5,col=i+1)
+    if(i==6){
+        points(cd[idx,7:6],pch=20,cex=1,col=i+1)
+        points(cd[idx,7:6],pch=20,cex=.5,col=1)
+    }
+}
+savePlot("split.arch.jpg")
+
+for(i in 1:6){
+    layout(matrix(c(1,1,1,1,2,2),nrow=3,byrow=TRUE))
+    plot(cd[,7:6],pch=".",cex=.5,main=paste("arch ",i),col=grey(.95))
+    idx=which(predVals[,i]>.5)
+    points(cd[idx,7:6],pch=20,cex=0.5,col=i+1)
+    boxplot(cd.scaled[,2:(length(names.items)+1)])
+    points(arch.scaled[i,],col=i+1,type="b",lwd=4,pch=i+1,lty=1,cex=2)
+    savePlot(paste("arch",i,".jpg",sep=""))
+}
+
+lake.col
+
+
+### Ephraim
+class.data=read.csv("C:/Users/FWL/Documents/classvars_v2_6JAN21.csv")
 str(class.data)
 
 ## data manipulation
@@ -16,7 +132,7 @@ cd[,10]=log(cd[,10]+1) ## log(h12_runoff+1)
 cd[,19]=log(cd[,19])
 cd$pct.for=apply(cd[,14:16],1,sum) ## summing across forest types
 cd$pct.wet=apply(cd[,17:18],1,sum) ## summing across wet types
-#cd$conn.class.num=as.numeric(cd[,5]) ## making connectivity class numeric
+cd$conn.class.num=as.numeric(as.factor(cd[,5])) ## making connectivity class numeric
 
 
 ## install.packages("archetypes")
