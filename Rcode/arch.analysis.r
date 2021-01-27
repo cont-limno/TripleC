@@ -72,8 +72,16 @@ for(i in 1:nrow(arch.scaled)){
 #savePlot("archetypes-20210113.jpg")
 
 boxplot(cd[,8:12],col=2:6,names=c("A1","A2","A3","A4","A5"),main="Weights of each Archetype (boxplots of estimated weights in all networks)")
-savePlot("weights.boxplot.jpg")
+#savePlot("weights.boxplot.jpg")
 apply(cd[,8:12],2,mean)
+
+# how many networks weighted > 0.5 for each archetype?
+arch_results <- as.data.frame(cd)
+nrow(subset(arch_results, w.arch1>0.5))
+nrow(subset(arch_results, w.arch2>0.5))
+nrow(subset(arch_results, w.arch3>0.5))
+nrow(subset(arch_results, w.arch4>0.5))
+nrow(subset(arch_results, w.arch5>0.5))
 
 #aa.results <- list(cd=cd,archetypes=archetypes)
 #save(aa.results,file="aa.results6-20210113.Rdata")
