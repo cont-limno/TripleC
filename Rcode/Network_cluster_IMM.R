@@ -1,3 +1,11 @@
+############# Analylsis of changing Koppen climate class for US lakes ##########################
+# Date: 2-10-21
+# updated: 2-18-21
+# Author: Ian McCullough, immccull@gmail.com
+################################################################################################
+
+setwd("C:/Users/FWL/Documents/TripleC")
+
 # rm(list=ls())
 #### R libraries ####
 library(dplyr)
@@ -281,18 +289,32 @@ cluster_results <- dat %>%
 fviz_cluster(list(data = dat, cluster = sub_grp))
 
 # summary table
-dat %>%
+summary <- dat %>%
   mutate(cluster = sub_grp) %>%
   group_by(cluster) %>%
   summarize_all("median")
+#write.csv(summary, "Data/medians_5clusters.csv")
 
 # boxplots of conn variables across clusters
 par(mfrow=c(2,4))
 par(mar=c(4, 4, 2, 2)) #bot, left, top, right
 boxplot_names <- colnames(cluster_results[,c(1:8)])
 for (i in 1:8){
-  boxplot(cluster_results[,i] ~ cluster_results[,9], xlab='Cluster number', ylab=boxplot_names[i])
+  boxplot(cluster_results[,i] ~ cluster_results[,9], xlab='Cluster number', ylab=boxplot_names[i], las=1)
 }
+
+jpeg('Figures/clusters5_boxplots.jpeg',width = 10,height = 7,units = 'in',res=600)
+  par(mfrow=c(2,4))
+  par(mar=c(3, 4, 2, 2)) #bot, left, top, right
+  boxplot_names <- c('A) Edge density','B) Articulation count','C) Minimum cuts - latitude','D) Maximum N-S distance',
+                     'E) Number of lakes','F) Avg lake distance', 'G) Range lake order',' H) Betweenness centrality')
+  ylabs <- colnames(cluster_results[,c(1:8)])
+  for (i in 1:8){
+    boxplot(cluster_results[,i] ~ cluster_results[,9], xlab='', ylab=ylabs[i], las=1, main='')
+    title(adj=0, boxplot_names[i])
+  }
+dev.off()
+
 
 # mapping
 output5 <- as.data.frame(sub_grp)
@@ -328,6 +350,10 @@ clust5_points <-ggplot(lake_network_pts_cluster_df, aes(x=xCor,y=yCor))+
         legend.position=c(0.95,0.30))+
   guides(color = guide_legend(override.aes = list(size=3.5)))#increase legend point size
 clust5_points
+
+dsnname <- "C:/Ian_GIS/TripleC_GIS/Clusters"
+layername <- "LAGOS_1ha_pts_networks_cluster5"
+writeOGR(lake_network_pts_cluster, dsn=dsnname, layer=layername, driver="ESRI Shapefile", overwrite_layer = T)
 
 # 6 clusters
 par(mfrow=c(1,1))
