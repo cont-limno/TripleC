@@ -1,6 +1,6 @@
 ############# Analylsis of changing Koppen climate class for US lakes ##########################
 # Date: 2-10-21
-# updated: 2-18-21
+# updated: 4-6-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -35,7 +35,7 @@ states_shp <- shapefile("Data/lower48/lower48.shp")
 states_shp <- spTransform(states_shp, crs(lake_network_pts))
 
 # network data
-nets <- read.csv('../Data/Networks/network_scale_metrics.csv') 
+nets <- read.csv('Data/Networks/network_scale_metrics.csv') 
 head(nets)
 str(nets)
 between_cent <- read.csv("Data/Networks/betweenness_out_full.csv")
