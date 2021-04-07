@@ -1,6 +1,6 @@
 ######################## Climate of LAGOS Networks #############################################
 # Date: 1-6-21
-# updated: 1-7-21
+# updated: 4-7-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -10,7 +10,7 @@ setwd("C:/Users/FWL/Documents/TripleC")
 
 #### Input data ####
 networks <- read.csv("Data/Networks/nets_networkmetrics_medres.csv") #export v1
-#climate_19812010 <- read.csv("C:/Users/FWL/Documents/ClimateExposure/Data/AdaptWest/AdaptWest_bioclim_1981_2010.csv")
+climate_19812010 <- read.csv("C:/Users/FWL/Documents/ClimateExposure/Data/AdaptWest/AdaptWest_bioclim_1981_2010.csv")
 koppen_class <- read.csv("C:/Users/FWL/Documents/ClimateExposure/Data/AdaptWest/all_periods_class_only.csv")
 networks_geo <- read.csv("Data/Networks/lagosnet_geo.csv")
 
@@ -140,3 +140,44 @@ mtext(side=3, 'min_cut_lat <=10; 95% of networks')
 summary(networks_geo_min10_cut_lat$min_cut_lat)
 
 hist(networks_geo$maxlat_dist, xlab='maxlat_dist', main='Maximum latitudinal breadth of networks')
+
+#### Apr 2021 update ####
+network_climate_list <- list()
+
+for (i in 1:length(netids)){
+  nettump <- subset(networks, net_id==netids[i])
+  nettump_lagoslakeids <- nettump$lagoslakeid
+  nettump_climate <- subset(climate_19812010, lagoslakeid %in% nettump_lagoslakeids)
+  nettump_output <- data.frame(matrix(NA, nrow = 1, ncol = 1))
+  nettump_output[1,1] <- netids[i]
+  colnames(nettump_output) <- 'net_id' #make first column the network ID
+  # add number of lakes column
+  nettump_output$nLakes <- length(nettump_lagoslakeids)
+  # get climate stats for desired variables for all lakes within network
+  nettump_output$MAT_min <- min(nettump_climate$MAT, na.rm=T)
+  nettump_output$MAT_max <- max(nettump_climate$MAT, na.rm=T)
+  nettump_output$MAT_median <- median(nettump_climate$MAT, na.rm=T)
+  nettump_output$MAT_range <- nettump_output$MAT_max - nettump_output$MAT_min
+  nettump_output$MAT_sd <- sd(nettump_climate$MAT, na.rm=T)
+  # store output in list created earlier
+  network_climate_list[[i]] <- nettump_output
+  nettump_output <- NA
+}
+
+# merge all loop output in list into new data frame
+network_climate_summary <- do.call(rbind.data.frame, network_climate_list)
+# get rid of NAs (represent true Os)
+network_climate_summary[is.na(network_climate_summary)] <- 0
+#write.csv(network_climate_summary, "Data/Networks/networks_MAT_summary.csv")
+
+## exploratory plots
+summary(network_climate_summary$MAT_range)
+hist(network_climate_summary$MAT_range)
+summary(network_climate_summary$MAT_sd)
+hist(network_climate_summary$MAT_sd)
+
+plot(network_climate_summary$nLakes ~ network_climate_summary$MAT_range, pch=20)
+plot(network_climate_summary$nLakes ~ network_climate_summary$MAT_range, pch=20, ylim=c(0,5000))
+
+plot(network_climate_summary$nLakes ~ network_climate_summary$MAT_sd, pch=20)
+plot(network_climate_summary$nLakes ~ network_climate_summary$MAT_sd, pch=20, ylim=c(0,5000))
