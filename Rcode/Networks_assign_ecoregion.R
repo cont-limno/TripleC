@@ -21,9 +21,5 @@ networks_ecoregion <- networks_NARS_df %>%
   group_by(net_id) %>%
   slice(which.max(n))
 
-# manually assign ecoregions to networks that got missed by ArcGIS spatial join (topology issue?)
-# relevant to two small networks on Texas coast (CPL ecoregion)
-networks_ecoregion$WSA9 <- ifelse(networks_ecoregion$net_id %in% c('839','859'), 'CPL',networks_ecoregion$WSA9)
-
 write.csv(networks_ecoregion, file='Data/Networks/networks_NARS_ecoregions.csv', row.names=F)
 
