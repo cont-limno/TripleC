@@ -58,8 +58,8 @@ prop_protection <- protection %>%
 prop_protection <- merge(prop_protection, nLakes, by='net_id')
 prop_protection$GAP12_ctr_pct <- prop_protection$GAP12_ctr/prop_protection$net_lakes_n
 prop_protection$GAP123_ctr_pct <- prop_protection$GAP123_ctr/prop_protection$net_lakes_n
-prop_protection$GAP123_80pct_pct <- prop_protection$GAP12_80pct/prop_protection$net_lakes_n
-prop_protection$GAP12_80pct_pct <- prop_protection$GAP123_80pct/prop_protection$net_lakes_n
+prop_protection$GAP12_80pct_pct <- prop_protection$GAP12_80pct/prop_protection$net_lakes_n
+prop_protection$GAP123_80pct_pct <- prop_protection$GAP123_80pct/prop_protection$net_lakes_n
 
 # Basic figure of network protection (no ecoregions)
 jpeg('Figures/network_protection_histograms.jpeg',width = 7,height = 5,units = 'in',res=300)
@@ -73,6 +73,22 @@ dev.off()
 
 ## Bringing in the ecoregions
 prop_protection_NARS<- merge(prop_protection, networks_NARS[,c(1,2)], by='net_id')
+
+net_lakes_NARS_counts <- protection %>% 
+  group_by(WSA9) %>%
+  summarize(total_n=n())
+
+prop_protection_NARS_counts <- prop_protection_NARS %>%
+  group_by(WSA9) %>%
+  summarize(GAP12_ctr=sum(GAP12_ctr),GAP123_ctr=sum(GAP123_ctr),
+            GAP12_80pct=sum(GAP12_80pct), GAP123_80pct=sum(GAP123_80pct))
+
+prop_protection_NARS_counts <- merge(prop_protection_NARS_counts, net_lakes_NARS_counts, by='WSA9')
+prop_protection_NARS_counts$GAP12_ctr_pct <- (prop_protection_NARS_counts$GAP12_ctr/prop_protection_NARS_counts$total_n)*100
+prop_protection_NARS_counts$GAP123_ctr_pct <- (prop_protection_NARS_counts$GAP123_ctr/prop_protection_NARS_counts$total_n)*100
+prop_protection_NARS_counts$GAP12_80pct_pct <- (prop_protection_NARS_counts$GAP12_80pct/prop_protection_NARS_counts$total_n)*100
+prop_protection_NARS_counts$GAP123_80pct_pct <- (prop_protection_NARS_counts$GAP123_80pct/prop_protection_NARS_counts$total_n)*100
+
 
 jpeg('Figures/network_protection_boxplotsNARS.jpeg',width = 7,height = 5,units = 'in',res=300)
 par(mfrow=c(2,2))
@@ -90,10 +106,6 @@ hub_lakes_NARS <- merge(hub_lakes, ID_table, by='lagoslakeid')
 hub_lakes_NARS_counts <- hub_lakes_NARS %>% 
   group_by(WSA9) %>%
   summarize(n=n())
-
-net_lakes_NARS_counts <- protection %>% 
-  group_by(WSA9) %>%
-  summarize(total_n=n())
 
 # protection of hubs
 hub_lake_protection <- subset(protection, lagoslakeid %in% hub_lakes$lagoslakeid)
