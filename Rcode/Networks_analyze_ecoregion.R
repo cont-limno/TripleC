@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by NARS ecoregion #########################################
 # Date: 4-26-21
-# updated: 
+# updated: 4-27-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -15,6 +15,12 @@ netricks <- read.csv('Data/Networks/network_scale_metrics.csv')
 between_cent <- read.csv("Data/Networks/betweenness_out_full.csv")
 
 #### Main program ####
+# count networks by ecoregion
+networks_NARS_counts <- networks_NARS %>%
+  group_by(WSA9) %>%
+  summarize(n=n())
+
+
 # Select network variables that had been used for clustering
 dat <- netricks %>% 
   dplyr::select(net_id, edge_dens, artic_count, min_cut_lat, maxkmNS, net_lakes_n, net_averagelakedistance_km,

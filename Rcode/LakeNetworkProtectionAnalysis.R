@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by protected status #######################################
 # Date: 4-26-21
-# updated: 
+# updated: 4-27-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -22,6 +22,7 @@ GAP123_lakes_net <- shapefile("C:/Ian_GIS/TripleC_GIS/ProtectedLakes/GAP123_lake
 GAP12_lakes_net80 <- shapefile("C:/Ian_GIS/TripleC_GIS/ProtectedLakes/GAP12_lake_pts_net_80pct.shp")
 GAP123_lakes_net80 <- shapefile("C:/Ian_GIS/TripleC_GIS/ProtectedLakes/GAP123_lake_pts_net_80pct.shp")
 hub_lakes <- read.csv("Data/Networks/VIP_lakes.csv")
+between_cent <- read.csv("Data/Networks/betweenness_out_full.csv")
 
 #### Main program ####
 # get lagoslakeids of protected lakes by different status
@@ -99,6 +100,39 @@ boxplot(prop_protection_NARS$GAP12_80pct_pct~prop_protection_NARS$WSA9, las=2, x
 boxplot(prop_protection_NARS$GAP123_80pct_pct~prop_protection_NARS$WSA9, las=2,xlab='', ylab='Proportion protected', main='GAPS1-3, 80% watershed protected')
 dev.off()
 
+# calculate stats on network protection level across ecoregions and different protection status
+prop_protection_NARS_melted <- melt(prop_protection_NARS[,c(7:11)], id.vars='WSA9')
+names(prop_protection_NARS_melted) <- c('WSA9','protection','protection_pct')
+prop_protection_NARS_melted$protection_pct <- round((prop_protection_NARS_melted$protection_pct *100),2)
+
+network_protection_NARS_stats <- prop_protection_NARS_melted %>%
+  group_by(WSA9, protection) %>%
+  summarize(min=min(protection_pct), median=median(protection_pct), max=max(protection_pct))
+  
+a <- subset(network_protection_NARS_stats, protection=='GAP12_ctr_pct')
+a <- cbind.data.frame(a[,c(1:2)], paste0('(',a$min,'), ', '(',a$median, '), ','(',a$max,')'))
+names(a) <- c('WSA9','protection','MinMedianMax')
+
+b <- subset(network_protection_NARS_stats, protection=='GAP123_ctr_pct')
+b <- cbind.data.frame(b[,c(1:2)], paste0('(',b$min,'), ', '(',b$median, '), ','(',b$max,')'))
+names(b) <- c('WSA9','protection','MinMedianMax')
+
+c <- subset(network_protection_NARS_stats, protection=='GAP12_80pct_pct')
+c <- cbind.data.frame(c[,c(1:2)], paste0('(',c$min,'), ', '(',c$median, '), ','(',c$max,')'))
+names(c) <- c('WSA9','protection','MinMedianMax')
+
+d <- subset(network_protection_NARS_stats, protection=='GAP123_80pct_pct')
+d <- cbind.data.frame(d[,c(1:2)], paste0('(',d$min,'), ', '(',d$median, '), ','(',d$max,')'))
+names(d) <- c('WSA9','protection','MinMedianMax')
+
+abdc <- rbind.data.frame(a,b,c,d)
+#write.csv(abdc, file='Data/Networks/network_protection_NARS_stats.csv')
+
+# same calculations across all ecoregions
+prop_protection_NARS_melted %>%
+  group_by(protection) %>%
+  summarize(min=min(protection_pct), median=median(protection_pct), max=max(protection_pct))
+
 ## Hub lake analysis
 # figure out ecoregion membership of hubs
 hub_lakes_NARS <- merge(hub_lakes, ID_table, by='lagoslakeid')
@@ -175,3 +209,40 @@ stacked_80pct_plot <- ggplot(stacked_80pct_df, aes(fill=variable, y=value, x=WSA
 png('Figures/HubLakeProtectionByNARS.png',width = 4.5,height = 6,units = 'in',res=300)
   grid.arrange(stacked_ctr_plot, stacked_80pct_plot, nrow=2)
 dev.off()
+
+
+### Does protection relate to network conn stats? ##
+# Select network variables for clustering
+dat <- netricks %>% 
+  dplyr::select(net_id, edge_dens, artic_count, min_cut_lat, maxkmNS, net_lakes_n, net_averagelakedistance_km,
+                net_rangeorder)
+
+# optionally add in betweenness centrality metric
+dat <- merge(dat, between_cent[,c(1,4)], by='net_id')
+
+# Remove 1 NA value
+dat <- dat %>% filter(!is.na(maxkmNS))
+
+# Remove networks with < 4 lakes
+#dat <- dat %>% 
+#  filter(net_lakes_n > 4)
+
+# Add row names
+row.names(dat) <- dat$net_id
+
+# combine netricks with protection 
+conn_protection <- merge(dat, prop_protection_NARS[,c(1,7:11)], by='net_id')
+par(mfrow=c(2,2))
+
+plot(conn_protection$GAP12_ctr_pct ~ conn_protection$net_lakes_n, xlab='Number of lakes', 
+     ylab='Propotion network protected', las=1, main='GAPS 1-2, lake centers')
+plot(conn_protection$GAP123_ctr_pct ~ conn_protection$net_lakes_n, xlab='Number of lakes', 
+     ylab='Propotion network protected', las=1, main='GAPS 1-3, lake centers')
+plot(conn_protection$GAP12_80pct_pct ~ conn_protection$net_lakes_n, xlab='Number of lakes', 
+     ylab='Propotion network protected', las=1, main='GAPS 1-2, 80% watershed')
+plot(conn_protection$GAP123_80pct_pct ~ conn_protection$net_lakes_n, xlab='Number of lakes', 
+     ylab='Propotion network protected', las=1, main='GAPS1-3, 80% watershed')
+
+cormat <- as.data.frame(cor(conn_protection[2:13], use='pairwise.complete.obs',method='pearson'))
+#write.csv(cormat[9:12], file='Data/Networks/pearson_cormat_networkconn_protection.csv')
+
