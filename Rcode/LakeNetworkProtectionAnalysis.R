@@ -23,6 +23,7 @@ GAP12_lakes_net80 <- shapefile("C:/Ian_GIS/TripleC_GIS/ProtectedLakes/GAP12_lake
 GAP123_lakes_net80 <- shapefile("C:/Ian_GIS/TripleC_GIS/ProtectedLakes/GAP123_lake_pts_net_80pct.shp")
 hub_lakes <- read.csv("Data/Networks/VIP_lakes.csv")
 between_cent <- read.csv("Data/Networks/betweenness_out_full.csv")
+network_lakes_NARS_nonMS <- read.csv("Data/Networks/nLakes_networks_NARS_nonMS.csv")
 
 #### Main program ####
 # get lagoslakeids of protected lakes by different status
@@ -100,6 +101,67 @@ boxplot(prop_protection_NARS$GAP12_80pct_pct~prop_protection_NARS$WSA9, las=2, x
 boxplot(prop_protection_NARS$GAP123_80pct_pct~prop_protection_NARS$WSA9, las=2,xlab='', ylab='Proportion protected', main='GAPS1-3, 80% watershed protected')
 dev.off()
 
+# ggplot grouped boxplot
+prop_protection_NARS_noMS <- subset(prop_protection_NARS, net_id>1)
+prop_protection_grouped_ctr <- prop_protection_NARS_noMS[,c(7,8,11)]
+prop_protection_grouped_ctr <- melt(prop_protection_grouped_ctr)
+colnames(prop_protection_grouped_ctr) <- c('WSA9','Protection','Percent')
+prop_protection_grouped_ctr$Percent <- prop_protection_grouped_ctr$Percent *100
+
+prop_protection_grouped_80pct <- prop_protection_NARS_noMS[,c(9,10,11)]
+prop_protection_grouped_80pct <- melt(prop_protection_grouped_80pct)
+colnames(prop_protection_grouped_80pct) <- c('WSA9','Protection','Percent')
+prop_protection_grouped_80pct$Percent <- prop_protection_grouped_80pct$Percent *100
+
+ctr_grouped <- ggplot(prop_protection_grouped_ctr, aes(WSA9, Percent, fill=Protection)) +
+  geom_boxplot()+
+  xlab("") +
+  ylab("% of network protected") +
+  guides(fill = guide_legend(reverse=T)) +  
+  #theme_bw() +
+  ggtitle('a) Network protection (lake centers)')+
+  scale_y_continuous(limits=c(0,100), breaks=seq(0,100,20)) +
+  #scale_x_discrete(labels=c('IS','HW','DRS','DRLS'))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"))+
+  #theme(axis.text.x=element_text(angle=50, hjust=1))+ #tilt axis labels
+  geom_hline(yintercept=17, linetype='dashed', color='black')+
+  theme(axis.title.y = element_text(vjust=2.7, color='black'))+ #nudge y axis label away from axis a bit
+  scale_fill_manual("legend", values = c("GAP123_ctr_pct" = "navajowhite2", "GAP12_ctr_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
+                    labels=c('Strict','Multi-use'))+
+  #theme(legend.position=c(0.43,0.86))+ #manually reposition legend inside plot
+  theme(legend.position = 'none')+
+  theme(axis.text.y = element_text(color='black'), axis.text.x=element_text(color='black'))+
+  #theme(legend.position='none')+
+  theme(legend.title=element_blank()) #remove legend title
+
+plot80pct_grouped <- ggplot(prop_protection_grouped_80pct, aes(WSA9, Percent, fill=Protection)) +
+  geom_boxplot()+
+  xlab("") +
+  ylab("% of network protected") +
+  guides(fill = guide_legend(reverse=T)) +  
+  #theme_bw() +
+  ggtitle('c) Network protection (80% watershed)')+
+  scale_y_continuous(limits=c(0,100), breaks=seq(0,100,20)) +
+  #scale_x_discrete(labels=c('IS','HW','DRS','DRLS'))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"))+
+  #theme(axis.text.x=element_text(angle=50, hjust=1))+ #tilt axis labels
+  geom_hline(yintercept=17, linetype='dashed', color='black')+
+  theme(axis.title.y = element_text(vjust=2.7, color='black'))+ #nudge y axis label away from axis a bit
+  scale_fill_manual("legend", values = c("GAP123_80pct_pct" = "navajowhite2", "GAP12_80pct_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
+                    labels=c('Strict','Multi-use'))+
+  theme(legend.position=c('none'))+ #manually reposition legend inside plot
+  theme(axis.text.y = element_text(color='black'), axis.text.x=element_text(color='black'))+
+  #theme(legend.position='none')+
+  theme(legend.title=element_blank()) #remove legend title
+
+# export multi-panel image
+#png('Figures/NetworkProtectionGroupedNARSBoxplots.png',width = 4.5,height = 6,units = 'in',res=300)
+#  grid.arrange(ctr_grouped, plot80pct_grouped, nrow=2)
+#dev.off()
+
+
 # calculate stats on network protection level across ecoregions and different protection status
 prop_protection_NARS_melted <- melt(prop_protection_NARS[,c(7:11)], id.vars='WSA9')
 names(prop_protection_NARS_melted) <- c('WSA9','protection','protection_pct')
@@ -141,6 +203,11 @@ hub_lakes_NARS_counts <- hub_lakes_NARS %>%
   group_by(WSA9) %>%
   summarize(n=n())
 
+# count network lakes by ecoregion without MS river
+network_lakes_NARS_counts_nonMS <- network_lakes_NARS_nonMS %>%
+  group_by(WSA9) %>%
+  summarize(n=n())
+
 # protection of hubs
 hub_lake_protection <- subset(protection, lagoslakeid %in% hub_lakes$lagoslakeid)
 
@@ -149,7 +216,7 @@ hub_lake_prop_protection <- hub_lake_protection %>%
   summarize(GAP12_ctr=sum(GAP12_ctr),GAP123_ctr=sum(GAP123_ctr),
             GAP12_80pct=sum(GAP12_80pct), GAP123_80pct=sum(GAP123_80pct))
 
-hub_lake_prop_protection <- merge(hub_lake_prop_protection, hub_lakes_NARS_counts, by='WSA9')
+hub_lake_prop_protection <- merge(hub_lake_prop_protection, network_lakes_NARS_counts_nonMS, by='WSA9')
 hub_lake_prop_protection$GAP12_ctr_pct <- (hub_lake_prop_protection$GAP12_ctr/hub_lake_prop_protection$n)*100
 hub_lake_prop_protection$GAP123_ctr_pct <- (hub_lake_prop_protection$GAP123_ctr/hub_lake_prop_protection$n)*100
 hub_lake_prop_protection$GAP12_80pct_pct <- (hub_lake_prop_protection$GAP12_80pct/hub_lake_prop_protection$n)*100
@@ -159,55 +226,57 @@ hub_lake_prop_protection$GAP123_80pct_pct <- (hub_lake_prop_protection$GAP123_80
 hub_lake_prop_protection$GAP3_ctr_only_pct <- hub_lake_prop_protection$GAP123_ctr_pct - hub_lake_prop_protection$GAP12_ctr_pct
 hub_lake_prop_protection$GAP3_80pct_only_pct <- hub_lake_prop_protection$GAP123_80pct_pct - hub_lake_prop_protection$GAP12_80pct_pct
 
-stacked_ctr_df <- melt(hub_lake_prop_protection[,c(1,7,11)], 'WSA9')
-stacked_80pct_df <- melt(hub_lake_prop_protection[,c(1,9,12)], 'WSA9')
+stacked_ctr_df <- melt(hub_lake_prop_protection[,c(1,7,8)], 'WSA9')
+stacked_80pct_df <- melt(hub_lake_prop_protection[,c(1,9,10)], 'WSA9')
 
 stacked_ctr_plot <- ggplot(stacked_ctr_df, aes(fill=variable, y=value, x=WSA9)) + 
-  geom_bar(stat="identity") +
+  geom_bar(stat="identity", position='dodge') +
   xlab("") +
-  ylab("Percent of lakes protected") +
+  ylab("% of hub lakes protected") +
   guides(fill = guide_legend(reverse=T)) +  
   #theme_bw() +
-  ggtitle('a) Protected hub = lake center in protected area')+
-  scale_y_continuous(limits=c(0,75), breaks=seq(0,75,5)) +
+  ggtitle('b) Hub lake protection (lake centers)')+
+  scale_y_continuous(limits=c(0,3), breaks=seq(0,3,1)) +
   #scale_x_discrete(labels=c('IS','HW','DRS','DRLS'))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"))+
   #theme(axis.text.x=element_text(angle=50, hjust=1))+ #tilt axis labels
-  geom_hline(yintercept=17, linetype='dashed', color='black')+
+  #geom_hline(yintercept=17, linetype='dashed', color='black')+
   theme(axis.title.y = element_text(vjust=2.7, color='black'))+ #nudge y axis label away from axis a bit
-  scale_fill_manual("legend", values = c("GAP3_ctr_only_pct" = "navajowhite2", "GAP12_ctr_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
+  scale_fill_manual("legend", values = c("GAP123_ctr_pct" = "navajowhite2", "GAP12_ctr_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
                     labels=c('Strict','Multi-use'))+
-  theme(legend.position=c(0.13,0.86))+ #manually reposition legend inside plot
+  theme(legend.position=c(0.2,0.86))+ #manually reposition legend inside plot
+  #theme(legend.position=c('none'))+
   theme(axis.text.y = element_text(color='black'), axis.text.x=element_text(color='black'))+
   #theme(legend.position='none')+
   theme(legend.title=element_blank()) #remove legend title
 
 
 stacked_80pct_plot <- ggplot(stacked_80pct_df, aes(fill=variable, y=value, x=WSA9)) + 
-  geom_bar(stat="identity") +
+  geom_bar(stat="identity", position='dodge') +
   xlab("") +
-  ylab("Percent of lakes protected") +
+  ylab("% of hub lakes protected") +
   guides(fill = guide_legend(reverse=T)) +  
   #theme_bw() +
-  ggtitle('b) Protected hub = 80% watershed protected')+
-  scale_y_continuous(limits=c(0,75), breaks=seq(0,75,5)) +
+  ggtitle('d) Hub lake protection (80% watershed)')+
+  scale_y_continuous(limits=c(0,3), breaks=seq(0,3,1)) +
   #scale_x_discrete(labels=c('IS','HW','DRS','DRLS'))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"))+
   #theme(axis.text.x=element_text(angle=50, hjust=1))+ #tilt axis labels
-  geom_hline(yintercept=17, linetype='dashed', color='black')+
+  #geom_hline(yintercept=17, linetype='dashed', color='black')+
   theme(axis.title.y = element_text(vjust=2.7, color='black'))+ #nudge y axis label away from axis a bit
-  scale_fill_manual("legend", values = c("GAP3_80pct_only_pct" = "navajowhite2", "GAP12_80pct_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
+  scale_fill_manual("legend", values = c("GAP123_80pct_pct" = "navajowhite2", "GAP12_80pct_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
                     labels=c('Strict','Multi-use'))+
-  theme(legend.position=c(0.13,0.86))+ #manually reposition legend inside plot
+  #theme(legend.position=c(0.13,0.86))+ #manually reposition legend inside plot
+  theme(legend.position='none')+
   theme(axis.text.y = element_text(color='black'), axis.text.x=element_text(color='black'))+
   #theme(legend.position='none')+
   theme(legend.title=element_blank()) #remove legend title
 
 
-png('Figures/HubLakeProtectionByNARS.png',width = 4.5,height = 6,units = 'in',res=300)
-  grid.arrange(stacked_ctr_plot, stacked_80pct_plot, nrow=2)
+png('Figures/NetworkHubLakeProtectionByNARS.png',width = 7.5,height = 7.5,units = 'in',res=300)
+  grid.arrange(ctr_grouped, stacked_ctr_plot, plot80pct_grouped, stacked_80pct_plot, nrow=2, ncol=2)
 dev.off()
 
 

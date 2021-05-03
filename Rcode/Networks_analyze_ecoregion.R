@@ -13,10 +13,16 @@ library(dplyr)
 networks_NARS <- read.csv("Data/Networks/networks_NARS_ecoregions.csv")
 netricks <- read.csv('Data/Networks/network_scale_metrics.csv') 
 between_cent <- read.csv("Data/Networks/betweenness_out_full.csv")
+network_lakes_NARS_nonMS <- read.csv("Data/Networks/nLakes_networks_NARS_nonMS.csv")
 
 #### Main program ####
 # count networks by ecoregion
 networks_NARS_counts <- networks_NARS %>%
+  group_by(WSA9) %>%
+  summarize(n=n())
+
+# count network lakes by ecoregion without MS river
+network_lakes_NARS_counts_nonMS <- network_lakes_NARS_nonMS %>%
   group_by(WSA9) %>%
   summarize(n=n())
 
