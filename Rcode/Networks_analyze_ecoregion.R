@@ -24,7 +24,7 @@ networks_NARS_counts <- networks_NARS %>%
 # Select network variables that had been used for clustering
 dat <- netricks %>% 
   dplyr::select(net_id, edge_dens, artic_count, min_cut_lat, maxkmNS, net_lakes_n, net_averagelakedistance_km,
-                net_rangeorder)
+                net_rangeorder, net_dams_n)
 head(dat)
 
 # optionally add in betweenness centrality metric
@@ -52,9 +52,14 @@ netricks_NARS <- merge(dat, networks_NARS[,c(1,2)], by='net_id')
 # (not finished)
 netricks_stats <- netricks_NARS %>% 
   group_by(WSA9) %>%
-  summarize(min=min(net_lakes_n), median=median(net_lakes_n), max=max(net_lakes_n), n=n())
+  summarize(min=min(net_lakes_n), median=round(median(net_lakes_n),0), max=max(net_lakes_n), n=n(),
+            minNS=round(min(maxkmNS, na.rm=T),0), medianNS=round(median(maxkmNS, na.rm=T),0), maxNS=round(max(maxkmNS, na.rm=T),0),
+            minDams=min(net_dams_n), medianDams=round(median(net_dams_n),0), maxDams=max(net_dams_n))
 
 netricks_stats$combined_col <- paste0(netricks_stats$min, ', ', netricks_stats$median, ', ', netricks_stats$max)
+netricks_stats$combined_colNS <- paste0(netricks_stats$minNS, ', ', netricks_stats$medianNS, ', ', netricks_stats$maxNS)
+netricks_stats$combined_colDams <- paste0(netricks_stats$minDams, ', ', netricks_stats$medianDams, ', ', netricks_stats$maxDams)
+
 #write.csv(netricks_stats, "Data/Networks/nLakes_networks_NARS.csv")
 
 # plots
