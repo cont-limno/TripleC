@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by NARS ecoregion #########################################
 # Date: 4-26-21
-# updated: 4-27-21
+# updated: 5-3-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -52,7 +52,10 @@ netricks_NARS <- merge(dat, networks_NARS[,c(1,2)], by='net_id')
 # (not finished)
 netricks_stats <- netricks_NARS %>% 
   group_by(WSA9) %>%
-  summarize(median=median(edge_dens),n=n())
+  summarize(min=min(net_lakes_n), median=median(net_lakes_n), max=max(net_lakes_n), n=n())
+
+netricks_stats$combined_col <- paste0(netricks_stats$min, ', ', netricks_stats$median, ', ', netricks_stats$max)
+#write.csv(netricks_stats, "Data/Networks/nLakes_networks_NARS.csv")
 
 # plots
 jpeg('Figures/netricks_NARS_boxplots.jpeg',width = 7,height = 10,units = 'in',res=300)
