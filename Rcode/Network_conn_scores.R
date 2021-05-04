@@ -48,6 +48,7 @@ head(dat)
 
 # optionally add in betweenness centrality metric
 dat <- merge(dat, between_cent[,c(1,4)], by='net_id')
+dat$artic_pct <- dat$artic_count/dat$net_lakes_n
 
 # Remove 1 NA value
 dat <- dat %>% filter(!is.na(maxkmNS))
@@ -74,7 +75,8 @@ cor(clus_dat)
 # for now, removing dams and artic count (highly correlated with number of lakes)
 # avg lake dist highly correlated with mxkmNS and number of lakes
 # took out range order because it's more about network characteristics rather than conn
-pca_conn <- princomp(~ edge_dens + min_cut_lat + maxkmNS + net_lakes_n  + vert_btwn_centr_norm_mean, 
+# removed maxkmNS because 0.76 correlated with net_lakes_n
+pca_conn <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct, 
                       data=clus_dat, cor=T, scores=T)
 par(mfrow=c(1,1))
 screeplot(pca_conn, type='l')
@@ -91,8 +93,8 @@ fviz_pca_var(pca_conn,
 # To get a composite of first 2 components, can do pythagorean on scores for PCs 1 and 2, but also can extend pythagorean theorem to use all axes
 pca_conn_scores <- as.data.frame(scores(pca_conn))
 pca_conn_scores$PCconnall <- sqrt((pca_conn_scores$Comp.1 ^2) + (pca_conn_scores$Comp.2 ^2) + 
-                                     (pca_conn_scores$Comp.3 ^2) + (pca_conn_scores$Comp.4 ^2) + 
-                                     (pca_conn_scores$Comp.5 ^2))
+                                     (pca_conn_scores$Comp.3 ^2))# + (pca_conn_scores$Comp.4 ^2) + 
+                                     #(pca_conn_scores$Comp.5 ^2))
 hist(pca_conn_scores$PCconnall)
 pca_conn_scores$net_id <- rownames(clus_dat)
 
@@ -131,3 +133,18 @@ plot(protection_pca$GAP12_80pct_pct ~ protection_pca$PCconnall)
 plot(protection_pca$GAP123_80pct_pct ~ protection_pca$PCconnall)
 
 cor(protection_pca[,c(7:10, 17:18)])
+
+### 3d plotting of PCA results
+library(rgl)
+protection_pca$WSA9 <- as.factor(protection_pca$WSA9)
+net_colors <- c('orange','lightcoral','khaki','lightgreen','gray60','dodgerblue','lightskyblue','forestgreen','yellow')
+protection_pca$color <- net_colors[ as.numeric(protection_pca$WSA9)]
+
+plot3d(protection_pca[,c(12:14)], col=protection_pca$color, pch=16)
+
+# trying another method
+library(scatterplot3d)
+
+s3d <- scatterplot3d(protection_pca[,c(12:14)], main='Network connectivity scores', 
+              color=protection_pca$color, pch=16, angle=55)
+legend(s3d$xyz.convert(-5.5,-3,9), legend=levels(protection_pca$WSA9), col=net_colors, pch=16, bty='n')
