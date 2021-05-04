@@ -1,4 +1,4 @@
-############# Analylsis of changing Koppen climate class for US lakes ##########################
+###################### Clustering LAGOS-US-NETWORKS ############################################
 # Date: 2-10-21
 # updated: 4-6-21
 # Author: Ian McCullough, immccull@gmail.com
