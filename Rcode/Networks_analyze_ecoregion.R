@@ -86,3 +86,19 @@ boxplot(netricks_NARS$net_averagelakedistance_km ~ netricks_NARS$WSA9, xlab='Eco
 boxplot(netricks_NARS$net_rangeorder ~ netricks_NARS$WSA9, xlab='Ecoregion', ylab='Lake order range', las=2)
 boxplot(netricks_NARS$vert_btwn_centr_norm_mean ~ netricks_NARS$WSA9, xlab='Ecoregion', ylab='Betweenness centrality', las=2)
 dev.off()
+
+netricks_NARS_min4 <- subset(netricks_NARS, net_lakes_n >=4)
+
+jpeg('Figures/netricks_NARS_boxplots_min4lakes.jpeg',width = 7,height = 10,units = 'in',res=300)
+par(mfrow=c(4,2))
+par(mar = c(3, 4, 2, 2)) #bot,left,top,right
+boxplot(netricks_NARS_min4$edge_dens ~ netricks_NARS_min4$WSA9, xlab='Ecoregion', ylab='Edge density', las=2)
+boxplot(netricks_NARS_min4$artic_pct ~ netricks_NARS_min4$WSA9, xlab='Ecoregion', ylab='Articulation points', las=2)
+boxplot(netricks_NARS_min4$min_cut_lat ~ netricks_NARS_min4$WSA9, xlab='Ecoregion', ylab='Min cuts latitude', las=2)
+boxplot(netricks_NARS_min4$maxkmNS ~ netricks_NARS_min4$WSA9, xlab='Ecoregion', ylab='Max N-S breadth (km)', las=2)
+boxplot(netricks_NARS_min4$net_lakes_n ~ netricks_NARS_min4$WSA9, xlab='Ecoregion', ylab='Number of lakes', las=2)
+boxplot(netricks_NARS_min4$net_averagelakedistance_km ~ netricks_NARS_min4$WSA9, xlab='Ecoregion', ylab='Avg lake distance', las=2)
+boxplot(netricks_NARS_min4$net_rangeorder ~ netricks_NARS_min4$WSA9, xlab='Ecoregion', ylab='Lake order range', las=2)
+boxplot(netricks_NARS_min4$vert_btwn_centr_norm_mean ~ netricks_NARS_min4$WSA9, xlab='Ecoregion', ylab='Betweenness centrality', las=2)
+dev.off()
+
