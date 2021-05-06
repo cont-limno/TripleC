@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by NARS ecoregion #########################################
 # Date: 4-26-21
-# updated: 5-3-21
+# updated: 5-6-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -28,8 +28,9 @@ network_lakes_NARS_counts_nonMS <- network_lakes_NARS_nonMS %>%
 
 
 # Select network variables that had been used for clustering
+netricks$artic_pct <- netricks$artic_count/netricks$net_lakes_n #calculate % of lakes in network that are articulation pts
 dat <- netricks %>% 
-  dplyr::select(net_id, edge_dens, artic_count, min_cut_lat, maxkmNS, net_lakes_n, net_averagelakedistance_km,
+  dplyr::select(net_id, edge_dens, artic_pct, min_cut_lat, maxkmNS, net_lakes_n, net_averagelakedistance_km,
                 net_rangeorder, net_dams_n)
 head(dat)
 
@@ -58,22 +59,26 @@ netricks_NARS <- merge(dat, networks_NARS[,c(1,2)], by='net_id')
 # (not finished)
 netricks_stats <- netricks_NARS %>% 
   group_by(WSA9) %>%
-  summarize(min=min(net_lakes_n), median=round(median(net_lakes_n),0), max=max(net_lakes_n), n=n(),
+  summarize(min_nLakes=min(net_lakes_n), median_nLakes=round(median(net_lakes_n),0), max_nLakes=max(net_lakes_n), n=n(),
             minNS=round(min(maxkmNS, na.rm=T),0), medianNS=round(median(maxkmNS, na.rm=T),0), maxNS=round(max(maxkmNS, na.rm=T),0),
-            minDams=min(net_dams_n), medianDams=round(median(net_dams_n),0), maxDams=max(net_dams_n))
+            minDams=min(net_dams_n), medianDams=round(median(net_dams_n),0), maxDams=max(net_dams_n),
+            minartic=round(min(artic_pct),2), medianartic=round(median(artic_pct),2), maxartic=round(max(artic_pct),2),
+            min_latcuts=min(min_cut_lat), median_latcuts=median(min_cut_lat), max_latcuts=max(min_cut_lat))
 
-netricks_stats$combined_col <- paste0(netricks_stats$min, ', ', netricks_stats$median, ', ', netricks_stats$max)
+netricks_stats$combined_col_nLakes <- paste0(netricks_stats$min_nLakes, ', ', netricks_stats$median_nLakes, ', ', netricks_stats$mmax_nLakes)
 netricks_stats$combined_colNS <- paste0(netricks_stats$minNS, ', ', netricks_stats$medianNS, ', ', netricks_stats$maxNS)
 netricks_stats$combined_colDams <- paste0(netricks_stats$minDams, ', ', netricks_stats$medianDams, ', ', netricks_stats$maxDams)
+netricks_stats$combined_colartic <- paste0(netricks_stats$minartic, ', ', netricks_stats$medianartic, ', ', netricks_stats$maxartic)
+netricks_stats$combined_collatcuts <- paste0(netricks_stats$min_latcuts, ', ', netricks_stats$median_latcuts, ', ', netricks_stats$max_latcuts)
 
-#write.csv(netricks_stats, "Data/Networks/nLakes_networks_NARS.csv")
+#write.csv(netricks_stats, "Data/Networks/netrick_stats_NARS.csv")
 
 # plots
 jpeg('Figures/netricks_NARS_boxplots.jpeg',width = 7,height = 10,units = 'in',res=300)
 par(mfrow=c(4,2))
 par(mar = c(3, 4, 2, 2)) #bot,left,top,right
 boxplot(netricks_NARS$edge_dens ~ netricks_NARS$WSA9, xlab='Ecoregion', ylab='Edge density', las=2)
-boxplot(netricks_NARS$artic_count ~ netricks_NARS$WSA9, xlab='Ecoregion', ylab='Articulation points', las=2)
+boxplot(netricks_NARS$artic_pct ~ netricks_NARS$WSA9, xlab='Ecoregion', ylab='Articulation points', las=2)
 boxplot(netricks_NARS$min_cut_lat ~ netricks_NARS$WSA9, xlab='Ecoregion', ylab='Min cuts latitude', las=2)
 boxplot(netricks_NARS$maxkmNS ~ netricks_NARS$WSA9, xlab='Ecoregion', ylab='Max N-S breadth (km)', las=2)
 boxplot(netricks_NARS$net_lakes_n ~ netricks_NARS$WSA9, xlab='Ecoregion', ylab='Number of lakes', las=2)

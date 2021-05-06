@@ -90,6 +90,10 @@ fviz_pca_var(pca_conn,
              repel = TRUE     # Avoid text overlapping
 )
 
+fviz_pca_biplot(pca_conn, addEllipses = T)
+
+fviz_pca_ind(pca_conn, addEllipses = T)
+
 # To get a composite of first 2 components, can do pythagorean on scores for PCs 1 and 2, but also can extend pythagorean theorem to use all axes
 pca_conn_scores <- as.data.frame(scores(pca_conn))
 pca_conn_scores$PCconnall <- sqrt((pca_conn_scores$Comp.1 ^2) + (pca_conn_scores$Comp.2 ^2) + 
@@ -148,3 +152,11 @@ library(scatterplot3d)
 s3d <- scatterplot3d(protection_pca[,c(12:14)], main='Network connectivity scores', 
               color=protection_pca$color, pch=16, angle=55)
 legend(s3d$xyz.convert(-5.5,-3,9), legend=levels(protection_pca$WSA9), col=net_colors, pch=16, bty='n')
+
+# and another
+
+library(pca3d)
+pca3d(pca_conn, show.ellipses = T, show.plane = F)
+groups=protection_pca$WSA9
+pca3d(pca_conn, group=groups, legend='topleft')
+
