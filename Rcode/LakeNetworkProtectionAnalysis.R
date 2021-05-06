@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by protected status #######################################
 # Date: 4-26-21
-# updated: 4-27-21
+# updated: 5-6-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -194,6 +194,15 @@ abdc <- rbind.data.frame(a,b,c,d)
 prop_protection_NARS_melted %>%
   group_by(protection) %>%
   summarize(min=min(protection_pct), median=median(protection_pct), max=max(protection_pct))
+
+# how many netwokrs meet 17% Aichi target
+aichi_networks <- subset(prop_protection_NARS_melted, protection_pct >= 17)
+
+aichi_networks_summary <- aichi_networks %>%
+  group_by(WSA9, protection) %>%
+  summarize(n=n())
+
+#write.csv(aichi_networks_summary, "Data/Networks/protected_networks_Aichi.csv")
 
 ## Hub lake analysis
 # figure out ecoregion membership of hubs
