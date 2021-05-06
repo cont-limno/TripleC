@@ -87,7 +87,7 @@ boxplot(netricks_NARS$net_rangeorder ~ netricks_NARS$WSA9, xlab='Ecoregion', yla
 boxplot(netricks_NARS$vert_btwn_centr_norm_mean ~ netricks_NARS$WSA9, xlab='Ecoregion', ylab='Betweenness centrality', las=2)
 dev.off()
 
-netricks_NARS_min4 <- subset(netricks_NARS, net_lakes_n >=4)
+netricks_NARS_min4 <- subset(netricks_NARS, net_lakes_n >3)
 
 jpeg('Figures/netricks_NARS_boxplots_min4lakes.jpeg',width = 7,height = 10,units = 'in',res=300)
 par(mfrow=c(4,2))
