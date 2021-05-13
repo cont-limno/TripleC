@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by protected status #######################################
 # Date: 4-26-21
-# updated: 5-6-21
+# updated: 5-10-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -90,6 +90,28 @@ prop_protection_NARS_counts$GAP12_ctr_pct <- (prop_protection_NARS_counts$GAP12_
 prop_protection_NARS_counts$GAP123_ctr_pct <- (prop_protection_NARS_counts$GAP123_ctr/prop_protection_NARS_counts$total_n)*100
 prop_protection_NARS_counts$GAP12_80pct_pct <- (prop_protection_NARS_counts$GAP12_80pct/prop_protection_NARS_counts$total_n)*100
 prop_protection_NARS_counts$GAP123_80pct_pct <- (prop_protection_NARS_counts$GAP123_80pct/prop_protection_NARS_counts$total_n)*100
+
+# How many fully protected networks?
+w=subset(prop_protection_NARS, GAP12_ctr_pct >=1)
+x=subset(prop_protection_NARS, GAP123_ctr_pct >=1)
+y=subset(prop_protection_NARS, GAP12_80pct_pct >=1)
+z=subset(prop_protection_NARS, GAP123_80pct_pct >=1)
+
+w %>%
+  group_by(WSA9) %>%
+  summarize(n=n())
+
+x %>%
+  group_by(WSA9) %>%
+  summarize(n=n())
+
+y %>%
+  group_by(WSA9) %>%
+  summarize(n=n())
+
+z %>%
+  group_by(WSA9) %>%
+  summarize(n=n())
 
 
 jpeg('Figures/network_protection_boxplotsNARS.jpeg',width = 7,height = 5,units = 'in',res=300)

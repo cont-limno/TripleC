@@ -1,6 +1,6 @@
 ###################### Connectivity scores for LAGOS-US-NETWORKS ###############################
 # Date: 5-4-21
-# updated:
+# updated: 5-7-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -49,6 +49,7 @@ head(dat)
 # optionally add in betweenness centrality metric
 dat <- merge(dat, between_cent[,c(1,4)], by='net_id')
 dat$artic_pct <- dat$artic_count/dat$net_lakes_n
+dat$artic_pct_inv <- 1-dat$artic_pct # make it so higher number represents greater resistance to fragmentation
 
 # Remove 1 NA value
 dat <- dat %>% filter(!is.na(maxkmNS))
@@ -76,7 +77,7 @@ cor(clus_dat)
 # avg lake dist highly correlated with mxkmNS and number of lakes
 # took out range order because it's more about network characteristics rather than conn
 # removed maxkmNS because 0.76 correlated with net_lakes_n
-pca_conn <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct, 
+pca_conn <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct_inv, 
                       data=clus_dat, cor=T, scores=T)
 par(mfrow=c(1,1))
 screeplot(pca_conn, type='l')
@@ -99,7 +100,7 @@ pca_conn_scores <- as.data.frame(scores(pca_conn))
 pca_conn_scores$PCconnall <- sqrt((pca_conn_scores$Comp.1 ^2) + (pca_conn_scores$Comp.2 ^2) + 
                                      (pca_conn_scores$Comp.3 ^2))# + (pca_conn_scores$Comp.4 ^2) + 
                                      #(pca_conn_scores$Comp.5 ^2))
-hist(pca_conn_scores$PCconnall)
+hist(pca_conn_scores$PCconnall, main='Network connectivity scores')
 pca_conn_scores$net_id <- rownames(clus_dat)
 
 pca_conn_scores_shp <- merge(lake_network_pts, pca_conn_scores, by='net_id', all.x=F)
