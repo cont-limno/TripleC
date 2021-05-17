@@ -1,6 +1,6 @@
 ###################### Connectivity scores for LAGOS-US-NETWORKS ###############################
 # Date: 5-4-21
-# updated: 5-7-21
+# updated: 5-17-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -102,6 +102,15 @@ pca_conn_scores$PCconnall <- sqrt((pca_conn_scores$Comp.1 ^2) + (pca_conn_scores
                                      #(pca_conn_scores$Comp.5 ^2))
 hist(pca_conn_scores$PCconnall, main='Network connectivity scores')
 pca_conn_scores$net_id <- rownames(clus_dat)
+
+# save nice conn score histogram
+jpeg('Figures/conn_score_histogram.jpeg',width = 7,height = 5,units = 'in',res=300)
+  hist(pca_conn_scores$PCconnall, main='Network connectivity scores', 
+       xlab='Score', las=1, breaks=seq(0,14,1), cex.main=2, cex.lab=1.5, cex.axis=1.5,
+       col=c('khaki','khaki','mediumseagreen','mediumseagreen',
+             'navy','navy','navy','navy','navy','navy','navy','navy','navy','navy'))
+dev.off()
+
 
 pca_conn_scores_shp <- merge(lake_network_pts, pca_conn_scores, by='net_id', all.x=F)
 pca_conn_scores_shp_df <- as.data.frame(pca_conn_scores_shp@data)
