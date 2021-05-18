@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by protected status #######################################
 # Date: 4-26-21
-# updated: 5-10-21
+# updated: 5-18-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -141,7 +141,7 @@ ctr_grouped <- ggplot(prop_protection_grouped_ctr, aes(WSA9, Percent, fill=Prote
   ylab("% of network protected") +
   guides(fill = guide_legend(reverse=T)) +  
   #theme_bw() +
-  ggtitle('a) Network protection (lake centers)')+
+  ggtitle('A) Network protection (lake centers)')+
   scale_y_continuous(limits=c(0,100), breaks=seq(0,100,20)) +
   #scale_x_discrete(labels=c('IS','HW','DRS','DRLS'))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -163,7 +163,7 @@ plot80pct_grouped <- ggplot(prop_protection_grouped_80pct, aes(WSA9, Percent, fi
   ylab("% of network protected") +
   guides(fill = guide_legend(reverse=T)) +  
   #theme_bw() +
-  ggtitle('c) Network protection (80% watershed)')+
+  ggtitle('C) Network protection (80% watershed)')+
   scale_y_continuous(limits=c(0,100), breaks=seq(0,100,20)) +
   #scale_x_discrete(labels=c('IS','HW','DRS','DRLS'))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -247,7 +247,8 @@ hub_lake_prop_protection <- hub_lake_protection %>%
   summarize(GAP12_ctr=sum(GAP12_ctr),GAP123_ctr=sum(GAP123_ctr),
             GAP12_80pct=sum(GAP12_80pct), GAP123_80pct=sum(GAP123_80pct))
 
-hub_lake_prop_protection <- merge(hub_lake_prop_protection, network_lakes_NARS_counts_nonMS, by='WSA9')
+#hub_lake_prop_protection <- merge(hub_lake_prop_protection, network_lakes_NARS_counts_nonMS, by='WSA9')#if want % protection as divided by network lakes
+hub_lake_prop_protection <- merge(hub_lake_prop_protection, hub_lakes_NARS_counts, by='WSA9')
 hub_lake_prop_protection$GAP12_ctr_pct <- (hub_lake_prop_protection$GAP12_ctr/hub_lake_prop_protection$n)*100
 hub_lake_prop_protection$GAP123_ctr_pct <- (hub_lake_prop_protection$GAP123_ctr/hub_lake_prop_protection$n)*100
 hub_lake_prop_protection$GAP12_80pct_pct <- (hub_lake_prop_protection$GAP12_80pct/hub_lake_prop_protection$n)*100
@@ -266,13 +267,13 @@ stacked_ctr_plot <- ggplot(stacked_ctr_df, aes(fill=variable, y=value, x=WSA9)) 
   ylab("% of hub lakes protected") +
   guides(fill = guide_legend(reverse=T)) +  
   #theme_bw() +
-  ggtitle('b) Hub lake protection (lake centers)')+
-  scale_y_continuous(limits=c(0,3), breaks=seq(0,3,1)) +
+  ggtitle('B) Hub protection (lake centers)')+
+  scale_y_continuous(limits=c(0,100), breaks=seq(0,100,20)) +
   #scale_x_discrete(labels=c('IS','HW','DRS','DRLS'))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"))+
   #theme(axis.text.x=element_text(angle=50, hjust=1))+ #tilt axis labels
-  #geom_hline(yintercept=17, linetype='dashed', color='black')+
+  geom_hline(yintercept=17, linetype='dashed', color='black')+
   theme(axis.title.y = element_text(vjust=2.7, color='black'))+ #nudge y axis label away from axis a bit
   scale_fill_manual("legend", values = c("GAP123_ctr_pct" = "navajowhite2", "GAP12_ctr_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
                     labels=c('Strict','Multi-use'))+
@@ -289,13 +290,13 @@ stacked_80pct_plot <- ggplot(stacked_80pct_df, aes(fill=variable, y=value, x=WSA
   ylab("% of hub lakes protected") +
   guides(fill = guide_legend(reverse=T)) +  
   #theme_bw() +
-  ggtitle('d) Hub lake protection (80% watershed)')+
-  scale_y_continuous(limits=c(0,3), breaks=seq(0,3,1)) +
+  ggtitle('D) Hub protection (80% watershed)')+
+  scale_y_continuous(limits=c(0,100), breaks=seq(0,100,20)) +
   #scale_x_discrete(labels=c('IS','HW','DRS','DRLS'))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"))+
   #theme(axis.text.x=element_text(angle=50, hjust=1))+ #tilt axis labels
-  #geom_hline(yintercept=17, linetype='dashed', color='black')+
+  geom_hline(yintercept=17, linetype='dashed', color='black')+
   theme(axis.title.y = element_text(vjust=2.7, color='black'))+ #nudge y axis label away from axis a bit
   scale_fill_manual("legend", values = c("GAP123_80pct_pct" = "navajowhite2", "GAP12_80pct_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
                     labels=c('Strict','Multi-use'))+
@@ -315,7 +316,7 @@ dev.off()
 # Select network variables for clustering
 dat <- netricks %>% 
   dplyr::select(net_id, edge_dens, artic_count, min_cut_lat, maxkmNS, net_lakes_n, net_averagelakedistance_km,
-                net_rangeorder)
+                net_rangeorder, net_dams_n)
 
 # optionally add in betweenness centrality metric
 dat <- merge(dat, between_cent[,c(1,4)], by='net_id')
@@ -343,6 +344,45 @@ plot(conn_protection$GAP12_80pct_pct ~ conn_protection$net_lakes_n, xlab='Number
 plot(conn_protection$GAP123_80pct_pct ~ conn_protection$net_lakes_n, xlab='Number of lakes', 
      ylab='Propotion network protected', las=1, main='GAPS1-3, 80% watershed')
 
-cormat <- as.data.frame(cor(conn_protection[2:13], use='pairwise.complete.obs',method='pearson'))
-#write.csv(cormat[9:12], file='Data/Networks/pearson_cormat_networkconn_protection.csv')
+cormat <- as.data.frame(cor(conn_protection[2:14], use='pairwise.complete.obs',method='pearson'))
+#write.csv(cormat[10:13], file='Data/Networks/pearson_cormat_networkconn_protection.csv')
 
+## Relationship between networks and hub lakes
+pca_Scores <- read.csv("Data/Networks/pca_network_conn_Scores.csv")[,c(7,8)]
+
+pca_Scores_hubs <- merge(hub_lakes_NARS, pca_Scores, by='net_id', all=F)
+length(unique(pca_Scores_hubs$net_id))
+
+pca_hiScores_hubs <- subset(pca_Scores_hubs, PCconnall > 4)
+length(unique(pca_hiScores_hubs$net_id))
+
+# how many hubs in high-score networks? Appears smallest hub net_id 106 (WA state) has no hubs
+pca_hiScores_hubs_summary <- pca_hiScores_hubs %>%
+  group_by(net_id) %>%
+  summarize(nHubs=n())
+
+# how well protected are these hubs in high-score networks?
+hiScores_hubs_protection <- merge(pca_hiScores_hubs, hub_lake_protection, by='lagoslakeid')
+
+hiScores_hubs_protection_summary <- hiScores_hubs_protection %>%
+  group_by(net_id.x) %>%
+  summarize(GAP12_ctr=sum(GAP12_ctr),
+            GAP123_ctr=sum(GAP123_ctr),
+            GAP12_80pct=sum(GAP12_80pct),
+            GAP123_80pct=sum(GAP123_80pct))
+
+colnames(hiScores_hubs_protection_summary) <- c('net_id','GAP12_ctr','GAP123_ctr','GAP12_80pct','GAP123_80pct')
+
+hiScores_hubs_protection_summary <- merge(hiScores_hubs_protection_summary, pca_hiScores_hubs_summary, by='net_id')
+
+# calculate % of hubs protected in each network
+hiScores_hubs_protection_summary$GAP12_ctr_pct <- round((hiScores_hubs_protection_summary$GAP12_ctr/hiScores_hubs_protection_summary$nHubs)*100,2)
+hiScores_hubs_protection_summary$GAP123_ctr_pct <- round((hiScores_hubs_protection_summary$GAP123_ctr/hiScores_hubs_protection_summary$nHubs)*100,2)
+hiScores_hubs_protection_summary$GAP12_80pct_pct <- round((hiScores_hubs_protection_summary$GAP12_80pct/hiScores_hubs_protection_summary$nHubs)*100,2)
+hiScores_hubs_protection_summary$GAP123_80pct_pct <- round((hiScores_hubs_protection_summary$GAP123_80pct/hiScores_hubs_protection_summary$nHubs)*100,2)
+
+test <- merge(hiScores_hubs_protection_summary, dat, by='net_id', all=F)
+test <- merge(test, networks_NARS[,c(1:2)], by='net_id', all=F)
+test <- merge(test, pca_Scores, by='net_id', all=F)
+
+#write.csv(test, "Data/Networks/HighScoreNetworkStats.csv", row.names=F)

@@ -1,6 +1,6 @@
 ############# Assignment of LAGOS networks by NARS ecoregion ###################################
 # Date: 4-26-21
-# updated: 
+# updated: 5-18-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -19,7 +19,8 @@ networks_NARS_df <- as.data.frame(networks_NARS@data)
 networks_ecoregion <- networks_NARS_df %>% 
   count(net_id, WSA9) %>%
   group_by(net_id) %>%
-  slice(which.max(n))
+  slice(which.max(n)) #this takes the ecoregion with the most lakes in a network; may not want that
 
-write.csv(networks_ecoregion, file='Data/Networks/networks_NARS_ecoregions.csv', row.names=F)
+# this is not the total number of lakes per network
+#write.csv(networks_ecoregion, file='Data/Networks/networks_NARS_ecoregions.csv', row.names=F)
 
