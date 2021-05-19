@@ -4,8 +4,6 @@
 # Author: Katelyn King
 ################################################################################################
 
-setwd("C:/Users/FWL/Documents/TripleC")
-
 #### R libraries ####
 library(dplyr)
 library(ggplot2)
@@ -13,14 +11,17 @@ library(igraph) #distance table and fun figures
 library(mapdata)
 
 #### Input data ####
-#LAGOS_NETWORKS_v1
+#LAGOS_NETWORKS_v1 all lakes 
 lagos_networks_all <- read.csv("Data/Networks/nets_networkmetrics_medres.csv") %>%
-  dplyr::select(lagoslakeid, net_id, net_lakes_n, net_averagelakedistance_km, net_averagelakearea_ha, net_dams_n, lake_nets_lnn, lake_nets_lakeorder ) #all lakes
-lagos_networks<-lagos_networks_all[!duplicated(paste(lagos_networks_all$net_id)),] #just network data
-#graph network metrics 
-graph_networks<- read.csv("Data/Networks/lagosnet_metrics.csv")
+#just network data
+lagos_networks<-lagos_networks_all[!duplicated(paste(lagos_networks_all$net_id)),] %>% 
+  dplyr::select(lagoslakeid, net_id, net_lakes_n, net_averagelakedistance_km, net_averagelakearea_ha, net_dams_n, lake_nets_lnn, lake_nets_lakeorder )
+#graph network metrics
+graph_networks<- read.csv("Data/Networks/lagosnet_metrics.csv") 
 #metrics with geo location 
 graph_geo<- read.csv("Data/Networks/lagosnet_geo.csv")
+#hub lakes 
+hub_lakes<- read.csv("Data/Networks/VIP_lakes.csv")
 
 #bidirectional dist table - version 7Dec2020
 bidir<-read.csv("/Users/katelynking/Desktop/Conny Network/med_res_complete/flowtable and distance/nets__binetworkdistance_medres.csv") %>%
@@ -189,3 +190,210 @@ p+geom_point(data=ll_sub, size = 1, aes(x = lake_lon_decdeg, y = lake_lat_decdeg
         axis.ticks.y = element_blank(),
         axis.text.y = element_blank(),
         panel.background = element_rect(colour = "black", size=.5, fill=NA))
+
+#### conceptual diagram figure for temperature #### 
+#load data 
+lagos_networks_all <- read.csv("Data/Networks/nets_networkmetrics_medres.csv") %>%
+  dplyr::select(lagoslakeid, net_id, net_lakes_n) #all lakes
+lake_info<-read.csv( "/Users/katelynking/Desktop/Cont Limno/lake_link_Jan2021.csv") %>% 
+  dplyr::select(lagoslakeid, lake_nhdid, nhdplusv2_comid, lake_lat_decdeg, lake_lon_decdeg) 
+
+nets_ll<-left_join(lagos_networks_all, lake_info,  by = "lagoslakeid")
+nets_ll<-nets_ll[!duplicated(paste(nets_ll$lagoslakeid)),]  #remove duplicates 
+
+### select out network in Michigan that Ian has in panel A 
+michigan<-map_data(map="state", region = "michigan")  #pull out the usa map
+MI<-ggplot(data = michigan) + 
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "white", color = "black") + 
+  coord_fixed(1.3) 
+
+#* color based on temperature from Collins et al ####
+#average maxtemp for Jun,Jul, Aug at the lake point location. Collins et al. Dec 23, 2020 download 
+temp<-read.csv("/Users/katelynking/Desktop/MSU Research/Chap 4 Conny/air_temp_Ian/lagoslakeid_PRISM_Normals_1981_2010.csv") %>%
+  dplyr::select(lagoslakeid, summer_tmax) 
+net_28<-filter(nets_ll, net_id == 7) #select out MI network 
+net_temp<-left_join(net_28, temp)
+MI+geom_point(data=net_temp, size = 1, aes(x = lake_lon_decdeg, y = lake_lat_decdeg, col=summer_tmax))  +
+  scale_color_gradient(low="blue", high="red") +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.line.x = element_blank(), 
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.line.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        panel.background = element_rect(colour = "black", size=.5, fill=NA)) + 
+  theme(legend.position = c(0.2, 0.4))
+
+### try to use my own PRISM data since not all points match 
+#* pull PRISM points ####
+library(raster)
+#downloaded Jan 13, 2021; 30 year normal for 1981-2010 tmax for jun, july, aug 
+tamx_jun<-raster("/Users/katelynking/Desktop/PRISM/PRISM_tmax_30yr_normal_4kmM2_JUNE_bil/PRISM_tmax_30yr_normal_4kmM2_06_bil.bil")
+tamx_jul<-raster("/Users/katelynking/Desktop/PRISM/PRISM_tmax_30yr_normal_4kmM2_JULY_bil/PRISM_tmax_30yr_normal_4kmM2_07_bil.bil")
+tamx_aug<-raster("/Users/katelynking/Desktop/PRISM/PRISM_tmax_30yr_normal_4kmM2_AUG_bil/PRISM_tmax_30yr_normal_4kmM2_08_bil.bil")
+crs(tamx_jun)
+summer_means=stack(c(tamx_jun, tamx_jul,tamx_aug))
+tmean=mean(summer_means)
+
+#project to NAD 83 
+net28_ll <- SpatialPointsDataFrame(coords=net_28[,c("lake_lon_decdeg","lake_lat_decdeg")], data=net_28,
+                                    proj4string=CRS("+proj=longlat +datum=NAD83 +ellps=GRS80")) 
+
+#extract(x, y, ...) #where x is the raster object and y are the points represented by a two column matrix or data.frame
+net_28$summer_tmax<-raster::extract(tmean, net28_ll, na.rm=T)
+
+jpeg('Figures/MI_net_temp.jpeg',width = 10,height = 7,units = 'in',res=600)
+MI+geom_point(data=net_28, size = 1, aes(x = lake_lon_decdeg, y = lake_lat_decdeg, col=summer_tmax))  +
+  scale_color_gradient(low="blue", high="red") +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.line.x = element_blank(), 
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.line.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        panel.background = element_rect(colour = "black", size=.5, fill=NA)) + 
+  theme(legend.position = c(0.2, 0.4))
+dev.off()
+
+
+### MN data 
+MN_dat<-read.csv("/Users/katelynking/Desktop/static_lake_predictors.csv")
+MN_info<-read.csv("/Users/katelynking/Desktop/mndow_nhdhr_xwalk.csv")
+library(tidyr)
+MN<-MN_info %>% 
+  separate(DOW, c("title", "DOW"), "_") %>%
+  separate(site_id, c("titlenhd", "nhdr"), "_") %>%
+  select(DOW, nhdr)
+MN$DOW<-as.integer(MN$DOW)
+MN$nhdr<-as.factor(MN$nhdr)
+MN_temp<-left_join(MN_dat, MN) %>%
+            left_join(lake_info, by=c("nhdr"="lake_nhdid")) %>%
+              left_join(nets_ll, by="lagoslakeid")
+
+MN_temp<-MN_temp[!duplicated(paste(MN_temp$lagoslakeid)),]  #remove duplicates 
+
+#try net 13 or 11
+minn<-map_data(map="state", region = "minnesota")  #pull out the usa map
+MN<-ggplot(data = minn) + 
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "white", color = "black") + 
+  coord_fixed(1.3) 
+
+net_11<-filter(MN_temp, net_id == 11) #select out MI network 
+
+jpeg('Figures/MN_net_temp.jpeg',width = 10,height = 7,units = 'in',res=600)
+MN+geom_point(data=net_11, size = 1, aes(x = lake_lon_decdeg.x, y = lake_lat_decdeg.x, col=mean_gdd))  +
+  scale_color_gradient(low="blue", high="red") +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.line.x = element_blank(), 
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.line.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        panel.background = element_rect(colour = "black", size=.5, fill=NA)) + 
+    theme(legend.position = c(0.8, 0.4))
+dev.off()
+
+#### MI data modeled surface water temp #### 
+temp<-read.csv("/Users/katelynking/Desktop/UofM/CHANGES/SNT_data/lake_surface_temp.csv") %>%
+  dplyr:: select(IHDLKID, TAVE.mean) %>%
+  rename(ihdlkid = IHDLKID, mean_temp=TAVE.mean)
+temp$ihdlkid<-as.factor(temp$ihdlkid)
+
+dd_temp<-read.csv("/Users/katelynking/Desktop/UofM/CHANGES/SNT_data/lake_degree_days_year.csv") %>%
+  dplyr:: select(IHDLKID, DD_2019) %>%
+  rename(ihdlkid = IHDLKID, degree_days=DD_2019)
+dd_temp$ihdlkid<-as.factor(dd_temp$ihdlkid)
+
+#michigan map 
+michigan<-map_data(map="state", region = "michigan")  #pull out the usa map
+MI<-ggplot(data = michigan) + 
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "white", color = "black") + 
+  coord_fixed(1.3) 
+
+net_28<-filter(nets_ll, net_id == 7) #select out MI network 
+net_temp<-left_join(net_28, temp, by = c('lake_nhdid' = 'ihdlkid'))
+net_dd_temp<-left_join(net_28, dd_temp, by = c('lake_nhdid' = 'ihdlkid'))
+
+MI+geom_point(data=net_temp, size = 1, aes(x = lake_lon_decdeg, y = lake_lat_decdeg, col=mean_temp))  +
+  scale_color_gradient(low="blue", high="red") +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.line.x = element_blank(), 
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.line.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        panel.background = element_rect(colour = "black", size=.5, fill=NA)) + 
+  theme(legend.position = c(0.2, 0.4))
+
+MI+geom_point(data=net_dd_temp, size = 1, aes(x = lake_lon_decdeg, y = lake_lat_decdeg, col=degree_days))  +
+  scale_color_gradient(low="blue", high="red") +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        axis.line.x = element_blank(), 
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.line.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        panel.background = element_rect(colour = "black", size=.5, fill=NA)) + 
+  theme(legend.position = c(0.2, 0.4))
+
+
+#### hub lake characteristics #### 
+hub_char<-left_join(hub_lakes, lagos_networks_all)
+#new columns for directly up or down dam 
+hub_char <- hub_char %>%
+  mutate(down_dam = case_when(is.na(lake_nets_nearestdamdown_km) ~ "N",   #if ~ then 
+                            TRUE ~"Y"
+  )) %>%
+  mutate(up_dam = case_when(is.na(lake_nets_nearestdamup_km) ~ "N",   #if ~ then 
+                            TRUE ~"Y"
+  ))
+
+dam_flag<-hub_char %>% 
+            count(lake_nets_damonlake_flag) 
+dam_flag<-hub_char %>% 
+  count(down_dam) 
+dam_flag<-hub_char %>% 
+  count(up_dam) 
+
+category  <- c("dam_on_lake", "down_dam", "up_dam")
+no <- c(1305, 512, 1007)
+yes <- c(357, 1150, 655)
+df <- data.frame(category, no, yes)
+df_long <- reshape2::melt(df, id = "category")
+
+#lot dams on lake, upstream dam, downstream dam 
+ggplot(df_long, aes(x = category, y = value, fill = variable, label = value)) +
+  geom_bar(stat = "identity") +
+  geom_text(size = 3, position = position_stack(vjust = 0.5))
+
+
+#number of dams on the network of the hub lake 
+hist(hub_char$net_dams_n) #32 hub lakes have no dams in the network 
+
+#number upstream dams 
+hist(hub_char$lake_nets_totaldamup_n) 
+
+#number downstream dams 
+hist(hub_char$lake_nets_totaldamdown_n) 
+
+summary(hub_char)
