@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by protected status #######################################
 # Date: 4-26-21
-# updated: 5-18-21
+# updated: 5-19-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -350,7 +350,7 @@ cormat <- as.data.frame(cor(conn_protection[2:14], use='pairwise.complete.obs',m
 ## Relationship between networks and hub lakes
 pca_Scores <- read.csv("Data/Networks/pca_network_conn_Scores.csv")[,c(7,8)]
 
-pca_Scores_hubs <- merge(hub_lakes_NARS, pca_Scores, by='net_id', all=F)
+pca_Scores_hubs <- merge(hub_lakes_NARS[,c(1:2)], pca_Scores, by='net_id', all=T)
 length(unique(pca_Scores_hubs$net_id))
 
 pca_hiScores_hubs <- subset(pca_Scores_hubs, PCconnall > 4)
@@ -360,6 +360,10 @@ length(unique(pca_hiScores_hubs$net_id))
 pca_hiScores_hubs_summary <- pca_hiScores_hubs %>%
   group_by(net_id) %>%
   summarize(nHubs=n())
+
+pca_allScores_hubs_summary <- pca_Scores_hubs %>%
+  group_by(net_id) %>%
+  summarize(nHubs=sum(!is.na(lagoslakeid)))
 
 # how well protected are these hubs in high-score networks?
 hiScores_hubs_protection <- merge(pca_hiScores_hubs, hub_lake_protection, by='lagoslakeid')
@@ -386,3 +390,39 @@ test <- merge(test, networks_NARS[,c(1:2)], by='net_id', all=F)
 test <- merge(test, pca_Scores, by='net_id', all=F)
 
 #write.csv(test, "Data/Networks/HighScoreNetworkStats.csv", row.names=F)
+
+## How about another table of all networks, netricks, scores and protection of networks and hubs
+# Maybe can focus on top-scoring networks in MS
+
+# First do same analysis as above, but for all scored networks:
+# how well protected are these hubs in scored networks?
+allScores_hubs_protection <- merge(pca_Scores_hubs, hub_lake_protection, by='lagoslakeid', all=T)
+
+allScores_hubs_protection_summary <- allScores_hubs_protection %>%
+  group_by(net_id.x) %>%
+  summarize(GAP12_ctr=sum(GAP12_ctr),
+            GAP123_ctr=sum(GAP123_ctr),
+            GAP12_80pct=sum(GAP12_80pct),
+            GAP123_80pct=sum(GAP123_80pct))
+
+colnames(allScores_hubs_protection_summary) <- c('net_id','GAP12_ctr','GAP123_ctr','GAP12_80pct','GAP123_80pct')
+
+allScores_hubs_protection_summary <- merge(allScores_hubs_protection_summary, pca_allScores_hubs_summary, by='net_id')
+
+# calculate % of hubs protected in each network
+allScores_hubs_protection_summary$GAP12_ctr_pct <- round((allScores_hubs_protection_summary$GAP12_ctr/allScores_hubs_protection_summary$nHubs)*100,2)
+allScores_hubs_protection_summary$GAP123_ctr_pct <- round((allScores_hubs_protection_summary$GAP123_ctr/allScores_hubs_protection_summary$nHubs)*100,2)
+allScores_hubs_protection_summary$GAP12_80pct_pct <- round((allScores_hubs_protection_summary$GAP12_80pct/allScores_hubs_protection_summary$nHubs)*100,2)
+allScores_hubs_protection_summary$GAP123_80pct_pct <- round((allScores_hubs_protection_summary$GAP123_80pct/allScores_hubs_protection_summary$nHubs)*100,2)
+
+test2 <- merge(allScores_hubs_protection_summary, dat, by='net_id', all=F)
+test2 <- merge(test2, networks_NARS[,c(1:2)], by='net_id', all=F)
+test2 <- merge(test2, pca_Scores, by='net_id', all=F)
+
+# final merging
+layover <- conn_protection[,c(1,11:14)]
+colnames(layover) <- c('net_id','net_GAP12_ctr_pct','net_GAP123_ctr_pct','net_GAP12_80pct_pct','net_GAP123_80pct_pct')
+money_table <- merge(test2, layover, by='net_id', all=F)
+
+#write.csv(money_table, file='Data/Networks/network_hub_protection_and_scores.csv', row.names=F)
+
