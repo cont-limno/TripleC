@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by protected status #######################################
 # Date: 4-26-21
-# updated: 5-19-21
+# updated: 5-21-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -425,4 +425,74 @@ colnames(layover) <- c('net_id','net_GAP12_ctr_pct','net_GAP123_ctr_pct','net_GA
 money_table <- merge(test2, layover, by='net_id', all=F)
 
 #write.csv(money_table, file='Data/Networks/network_hub_protection_and_scores.csv', row.names=F)
+
+# exploratory analysis
+#par(mfrow=c(2,2))
+plot(money_table$PCconnall ~ money_table$net_dams_n, pch=16)
+plot(money_table$PCconnall ~ money_table$nHubs, pch=16)
+plot(money_table$nHubs ~ money_table$net_dams_n, pch=16)
+plot(money_table$nHubs ~ money_table$net_lakes_n, pch=16)
+
+cor(money_table$PCconnall, money_table$net_dams_n, use='pairwise.complete.obs')
+cor(money_table$PCconnall, money_table$nHubs, use='pairwise.complete.obs')
+cor(money_table$PCconnall, money_table$net_lakes_n, use='pairwise.complete.obs')
+cor(money_table$net_lakes_n, money_table$net_dams_n, use='pairwise.complete.obs')
+cor(money_table$net_lakes_n, money_table$nHubs, use='pairwise.complete.obs')
+cor(money_table$nHubs, money_table$net_dams_n, use='pairwise.complete.obs')
+
+money_table$LakesHubs_pct <- money_table$nHubs/money_table$net_lakes_n
+hist(money_table$LakesHubs_pct)
+money_table$HubDam_pct <- money_table$nHubs/money_table$net_dams_n
+hist(money_table$HubDam_pct)
+money_table$HubRate <- money_table$nHubs/money_table$net_lakes_n
+hist(money_table$HubRate)
+money_table$DamRate <- money_table$net_dams_n/money_table$net_lakes_n
+hist(money_table$DamRate)
+
+cor(money_table[,c(6:19, 21:29)], use='pairwise.complete.obs')
+
+plot(money_table$PCconnall ~ money_table$LakesHubs_pct, pch=16)
+plot(money_table$PCconnall ~ money_table$HubRate, pch=16)
+plot(log(money_table$PCconnall) ~ log(money_table$DamRate), pch=16)
+plot(log(money_table$PCconnall) ~ log(money_table$HubRate), pch=16)
+
+
+# 3d plot?
+library(rgl)
+library(scatterplot3d)
+par(mfrow=c(1,1))
+money_table$WSA9 <- as.factor(money_table$WSA9)
+net_colors <- c('orange','lightcoral','khaki','lightgreen','gray60','dodgerblue','lightskyblue','forestgreen','yellow')
+money_table$color <- net_colors[ as.numeric(money_table$WSA9)]
+
+hubbub <- scatterplot3d(money_table[,c(21,28,29)], main='Hubbub', 
+                     color=money_table$color, pch=16, angle=55)
+legend(hubbub$xyz.convert(3.5,0.5,0), legend=levels(money_table$WSA9), col=net_colors, pch=16, bty='n')
+
+# erm maybe 2d is better
+plot(log(money_table$PCconnall) ~ log(money_table$HubDam_pct), pch=16, xlab='log(Hub/dam ratio)', las=1,
+     ylab='Network connectivity score', col=money_table$color)
+legend('topright',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=3)
+cor(money_table$PCconnall, money_table$HubDam_pct, method='pearson', use='pairwise.complete.obs')
+
+
+plot(log(money_table$PCconnall) ~ log(money_table$DamRate), pch=16, xlab='log(Dam rate)', las=1,
+     ylab='log(Network connectivity score)', col=money_table$color)
+legend('topleft',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=3)
+
+plot(log(money_table$PCconnall) ~ log(money_table$net_dams_n), pch=16, xlab='log(Dams)', las=1,
+     ylab='log(Network connectivity score)', col=money_table$color)
+legend('topleft',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=3)
+
+# untransformed data
+summary(money_table$PCconnall)
+summary(money_table$DamRate)
+
+plot(money_table$PCconnall ~ money_table$DamRate, pch=16, xlab='Dam rate', las=1,
+     ylab='Network connectivity score', col=money_table$color)
+legend('topright',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=3)
+abline(v=median(money_table$DamRate), lty=2)
+abline(h=median(money_table$PCconnall), lty=2)
+cor(money_table$PCconnall, money_table$DamRate, method='pearson', use='pairwise.complete.obs')
+
 
