@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by protected status #######################################
 # Date: 4-26-21
-# updated: 5-24-21
+# updated: 5-25-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -286,8 +286,8 @@ stacked_ctr_plot <- ggplot(stacked_ctr_df, aes(fill=variable, y=value, x=WSA9)) 
   geom_hline(yintercept=30, linetype='dashed', color='black')+
   theme(axis.title.y = element_text(vjust=2.7, color='black'))+ #nudge y axis label away from axis a bit
   scale_fill_manual("legend", values = c("GAP123_ctr_pct" = "navajowhite2", "GAP12_ctr_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
-                    labels=c('Strict','Multi-use'))+
-  theme(legend.position=c(0.2,0.86))+ #manually reposition legend inside plot
+                    labels=c('Strict','Strict + Multi-use'))+
+  theme(legend.position=c(0.25,0.86))+ #manually reposition legend inside plot
   #theme(legend.position=c('none'))+
   theme(axis.text.y = element_text(color='black'), axis.text.x=element_text(color='black'))+
   #theme(legend.position='none')+
@@ -460,8 +460,6 @@ hist(money_table$HubRate)
 money_table$DamRate <- money_table$net_dams_n/money_table$net_lakes_n
 hist(money_table$DamRate)
 
-cor(money_table[,c(6:19, 21:29)], use='pairwise.complete.obs')
-
 plot(money_table$PCconnall ~ money_table$LakesHubs_pct, pch=16)
 plot(money_table$PCconnall ~ money_table$HubRate, pch=16)
 plot(log(money_table$PCconnall) ~ log(money_table$DamRate), pch=16)
@@ -487,9 +485,18 @@ legend('topright',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=
 cor(money_table$PCconnall, money_table$HubDam_pct, method='pearson', use='pairwise.complete.obs')
 
 
+# deal with stupid -Inf  that messes up correlation
+log_table <- data.frame(logscore=log(money_table$PCconnall), logDamRate=log(money_table$DamRate))
+
+is.na(log_table) <- sapply(log_table, is.infinite)
+cor(log_table$logscore, log_table$logDamRate, use='pairwise.complete.obs', method='pearson')
+summary(lm(log_table$logscore ~ log_table$logDamRate))
+
+jpeg('Figures/network_conn_score_dam_rateLOG.jpeg',width = 7,height = 5,units = 'in',res=300)
 plot(log(money_table$PCconnall) ~ log(money_table$DamRate), pch=16, xlab='log(Dam rate)', las=1,
      ylab='log(Network connectivity score)', col=money_table$color)
 legend('topleft',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=3)
+dev.off()
 
 plot(log(money_table$PCconnall) ~ log(money_table$net_dams_n), pch=16, xlab='log(Dams)', las=1,
      ylab='log(Network connectivity score)', col=money_table$color)
