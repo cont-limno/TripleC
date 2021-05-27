@@ -451,6 +451,14 @@ cor(money_table$net_lakes_n, money_table$net_dams_n, use='pairwise.complete.obs'
 cor(money_table$net_lakes_n, money_table$nHubs, use='pairwise.complete.obs')
 cor(money_table$nHubs, money_table$net_dams_n, use='pairwise.complete.obs')
 
+# relationship between scores and hubs
+score_hub_df <- data.frame(PCconnall=money_table$PCconnall, nHubs=money_table$nHubs)
+score_hub_df <- subset(score_hub_df, nHubs > 0)
+hist(score_hub_df$nHubs)
+cor(log(score_hub_df$PCconnall), log(score_hub_df$nHubs), use='pairwise.complete.obs')
+cor.test(log(score_hub_df$PCconnall), log(score_hub_df$nHubs), method='pearson')
+
+
 money_table$LakesHubs_pct <- money_table$nHubs/money_table$net_lakes_n
 hist(money_table$LakesHubs_pct)
 money_table$HubDam_pct <- money_table$nHubs/money_table$net_dams_n
@@ -501,6 +509,20 @@ dev.off()
 plot(log(money_table$PCconnall) ~ log(money_table$net_dams_n), pch=16, xlab='log(Dams)', las=1,
      ylab='log(Network connectivity score)', col=money_table$color)
 legend('topleft',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=3)
+
+# compare dam rate across classes of conn scores
+DamRate_df <- money_table[,c('PCconnall','DamRate')]
+DamRate_df$Class <- ifelse(DamRate_df$PCconnall < 2, 'Low','Medium')
+DamRate_df$Class <- ifelse(DamRate_df$PCconnall >= 4, 'High',DamRate_df$Class)
+DamRate_df$Class <- as.factor(DamRate_df$Class)
+boxplot(DamRate_df$DamRate ~ DamRate_df$Class, xlab='Connectivity score', ylab='Dam rate', las=1)
+
+class.lm <- lm(DamRate ~ Class, data=DamRate_df)
+class.aov <- aov(class.lm)
+class.tukey <- TukeyHSD(class.aov)
+class.tukey
+
+plot(class.tukey)
 
 # untransformed data
 summary(money_table$PCconnall)
