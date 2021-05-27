@@ -1,6 +1,6 @@
 ###################### Connectivity scores for LAGOS-US-NETWORKS ###############################
 # Date: 5-4-21
-# updated: 5-24-21
+# updated: 5-27-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -21,14 +21,18 @@ library(factoextra)
 library(mapdata)
 
 #### Input data ####
-# locus <- read.csv('../Data/locus/lake_information_20200520.csv', stringsAsFactors = FALSE, na.strings= c("NA", "NULL", "")) 
-# names(locus)
-# dim(locus)
-
-# Lake characteristics
-# char <- read.csv('../Data/locus/lake_characteristics.csv', stringsAsFactors = FALSE, na.strings= c("NA", "NULL", ""))
-# head(char)
-# dim(char)
+# Original data sources and resources:
+# Cheruvelil, K. S., Soranno, P. A., McCullough, I. M., Webster, K. E., Rodriguez, L. and N. J. Smith. 
+# LAGOS-US LOCUS v1.0: Data module of location, identifiers, and physical characteristics of lakes and their 
+# watersheds in the conterminous U.S. Limnology and Oceanography Letters(data paper in review).
+# 
+# King, K., Wang, Q., Rodriguez, L.K., Haite, M., Danila, L., Pang-Ning, T., Zhou, J., and Cheruvelil, K.S. under review. 
+# LAGOS-US NETWORKS v1.0: Data module of surface water networks characterizing connections among lakes, streams, and
+# rivers in the conterminous U.S. Environmental Data Initiative. 
+# https://portal-s.edirepository.org/nis/mapbrowse?scope=edi&identifier=213. Dataset accessed XX/XX/2021.
+# 
+# King, K., Wang, Q., Rodriguez, L.K., and Cheruvelil, K.S. under review. Lake networks and connectivity metrics
+# for the conterminous U.S. (LAGOS-US NETWORKS v1). Limnology and Oceanography Letters. 
 
 lake_network_pts <- shapefile("C:/Ian_GIS/TripleC_GIS/Networks/LAGOS_1ha_pts_networks.shp")
 states_shp <- shapefile("Data/lower48/lower48.shp")
@@ -40,7 +44,7 @@ head(nets)
 str(nets)
 between_cent <- read.csv("Data/Networks/betweenness_out_full.csv")
 
-# Select network variables for clustering
+# Select network variables for analysis
 dat <- nets %>% 
   dplyr::select(net_id, edge_dens, artic_count, min_cut_lat, maxkmNS, net_lakes_n, net_averagelakedistance_km,
                 net_rangeorder, net_dams_n)
@@ -54,7 +58,7 @@ dat$artic_pct_inv <- 1-dat$artic_pct # make it so higher number represents great
 # calcuate dam rate variable
 dat$DamRate <- dat$net_dams_n/dat$net_lakes_n
 hist(dat$DamRate)
-dat$DamRate_inv <- 1-dat$DamRate
+dat$DamRate_inv <- 1-dat$DamRate #make it so more dams is bad for score
 hist(dat$DamRate_inv)
 
 # Remove 1 NA value
@@ -82,7 +86,6 @@ cor(clus_dat)
 # for now, removing dams and artic count (highly correlated with number of lakes)
 # avg lake dist highly correlated with mxkmNS and number of lakes
 # took out range order because it's more about network characteristics rather than conn
-# removed maxkmNS because 0.76 correlated with net_lakes_n
 pca_conn <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct_inv, 
                       data=clus_dat, cor=T, scores=T)
 par(mfrow=c(1,1))
@@ -117,7 +120,7 @@ jpeg('Figures/conn_score_histogram.jpeg',width = 7,height = 5,units = 'in',res=3
              'navy','navy','navy','navy','navy','navy','navy','navy','navy','navy'))
 dev.off()
 
-
+# Mapping scores
 pca_conn_scores_shp <- merge(lake_network_pts, pca_conn_scores, by='net_id', all.x=F)
 pca_conn_scores_shp_df <- as.data.frame(pca_conn_scores_shp@data)
 pca_conn_scores_shp_df$xCor <- pca_conn_scores_shp@coords[,1]
@@ -140,65 +143,65 @@ pca_conn_scores.point3 + geom_path(data=states_shp,aes(long,lat,group=group),col
 
 #write.csv(pca_conn_scores, file='Data/Networks/pca_network_conn_scores.csv')
 
-## PCA with Dam Rate variable
-pca_conn_DR <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct_inv + DamRate_inv, 
-                        data=clus_dat, cor=T, scores=T)
-par(mfrow=c(1,1))
-screeplot(pca_conn_DR, type='l')
-summary(pca_conn_DR)
-loadings(pca_conn_DR)
-eigenvals(pca_conn_DR)
-
-fviz_pca_var(pca_conn_DR,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-)
-
-
-# To get a composite of first 2 components, can do pythagorean on scores for PCs 1 and 2, but also can extend pythagorean theorem to use all axes
-pca_conn_DR_scores <- as.data.frame(scores(pca_conn_DR))
-pca_conn_DR_scores$PCconnall <- sqrt((pca_conn_DR_scores$Comp.1 ^2) + (pca_conn_DR_scores$Comp.2 ^2) + 
-                                       (pca_conn_DR_scores$Comp.3 ^2) + (pca_conn_DR_scores$Comp.4 ^2) + 
-                                       (pca_conn_DR_scores$Comp.5 ^2) + (pca_conn_DR_scores$Comp.6 ^2))
-#(pca_conn_DR_scores$Comp.5 ^2))
-hist(pca_conn_DR_scores$PCconnall, main='Network connectivity scores')
-pca_conn_DR_scores$net_id <- rownames(clus_dat)
-
-# save nice conn score histogram
-jpeg('Figures/conn_score_histogram_wDamRate.jpeg',width = 7,height = 5,units = 'in',res=300)
-hist(pca_conn_DR_scores$PCconnall, main='Network connectivity scores', 
-     xlab='Score', las=1, breaks=seq(0,14,1), cex.main=2, cex.lab=1.5, cex.axis=1.5,
-     col=c('khaki','khaki','mediumseagreen','mediumseagreen',
-           'navy','navy','navy','navy','navy','navy','navy','navy','navy','navy'))
-dev.off()
-
-
-pca_conn_DR_scores_shp <- merge(lake_network_pts, pca_conn_DR_scores, by='net_id', all.x=F)
-pca_conn_DR_scores_shp_df <- as.data.frame(pca_conn_DR_scores_shp@data)
-pca_conn_DR_scores_shp_df$xCor <- pca_conn_DR_scores_shp@coords[,1]
-pca_conn_DR_scores_shp_df$yCor <- pca_conn_DR_scores_shp@coords[,2]
-
-pca_conn_DR_scores.point3<-ggplot(pca_conn_DR_scores_shp_df, aes(x=xCor,y=yCor))+
-  geom_point(aes(colour=PCconnall), size=2) +
-  ggtitle('Network conn score')
-pca_conn_DR_scores.point3$labels$colour = 'Score' # change legend title
-pca_conn_DR_scores.point3 + geom_path(data=states_shp,aes(long,lat,group=group),colour='black') + coord_equal()+
-  #scale_colour_brewer(palette = 'Set1') +
-  scale_color_continuous(low='firebrick', high='dodgerblue')+
-  theme_bw() + 
-  theme(axis.text = element_blank(),
-        axis.line = element_blank(),
-        axis.ticks = element_blank(),
-        #panel.border = element_blank(),
-        panel.grid = element_blank(),
-        axis.title = element_blank())
+# ## PCA with Dam Rate variable
+# pca_conn_DR <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct_inv + DamRate_inv, 
+#                         data=clus_dat, cor=T, scores=T)
+# par(mfrow=c(1,1))
+# screeplot(pca_conn_DR, type='l')
+# summary(pca_conn_DR)
+# loadings(pca_conn_DR)
+# eigenvals(pca_conn_DR)
+# 
+# fviz_pca_var(pca_conn_DR,
+#              col.var = "contrib", # Color by contributions to the PC
+#              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+#              repel = TRUE     # Avoid text overlapping
+# )
+# 
+# 
+# # To get a composite of first 2 components, can do pythagorean on scores for PCs 1 and 2, but also can extend pythagorean theorem to use all axes
+# pca_conn_DR_scores <- as.data.frame(scores(pca_conn_DR))
+# pca_conn_DR_scores$PCconnall <- sqrt((pca_conn_DR_scores$Comp.1 ^2) + (pca_conn_DR_scores$Comp.2 ^2) + 
+#                                        (pca_conn_DR_scores$Comp.3 ^2) + (pca_conn_DR_scores$Comp.4 ^2) + 
+#                                        (pca_conn_DR_scores$Comp.5 ^2) + (pca_conn_DR_scores$Comp.6 ^2))
+# #(pca_conn_DR_scores$Comp.5 ^2))
+# hist(pca_conn_DR_scores$PCconnall, main='Network connectivity scores')
+# pca_conn_DR_scores$net_id <- rownames(clus_dat)
+# 
+# # save nice conn score histogram
+# jpeg('Figures/conn_score_histogram_wDamRate.jpeg',width = 7,height = 5,units = 'in',res=300)
+# hist(pca_conn_DR_scores$PCconnall, main='Network connectivity scores', 
+#      xlab='Score', las=1, breaks=seq(0,14,1), cex.main=2, cex.lab=1.5, cex.axis=1.5,
+#      col=c('khaki','khaki','mediumseagreen','mediumseagreen',
+#            'navy','navy','navy','navy','navy','navy','navy','navy','navy','navy'))
+# dev.off()
+# 
+# 
+# pca_conn_DR_scores_shp <- merge(lake_network_pts, pca_conn_DR_scores, by='net_id', all.x=F)
+# pca_conn_DR_scores_shp_df <- as.data.frame(pca_conn_DR_scores_shp@data)
+# pca_conn_DR_scores_shp_df$xCor <- pca_conn_DR_scores_shp@coords[,1]
+# pca_conn_DR_scores_shp_df$yCor <- pca_conn_DR_scores_shp@coords[,2]
+# 
+# pca_conn_DR_scores.point3<-ggplot(pca_conn_DR_scores_shp_df, aes(x=xCor,y=yCor))+
+#   geom_point(aes(colour=PCconnall), size=2) +
+#   ggtitle('Network conn score')
+# pca_conn_DR_scores.point3$labels$colour = 'Score' # change legend title
+# pca_conn_DR_scores.point3 + geom_path(data=states_shp,aes(long,lat,group=group),colour='black') + coord_equal()+
+#   #scale_colour_brewer(palette = 'Set1') +
+#   scale_color_continuous(low='firebrick', high='dodgerblue')+
+#   theme_bw() + 
+#   theme(axis.text = element_blank(),
+#         axis.line = element_blank(),
+#         axis.ticks = element_blank(),
+#         #panel.border = element_blank(),
+#         panel.grid = element_blank(),
+#         axis.title = element_blank())
 
 #write.csv(pca_conn_DR_scores, file='Data/Networks/pca_network_conn_scores_wDamRate.csv')
 
 
 #### analyze protection vs conn scores
-protection <- read.csv("Data/Networks/network_protection.csv")
+protection <- read.csv("Data/Networks/network_protection.csv") #(from LakeNetworkProtectionAnalysis.R)
 protection <- protection[,-1]
 
 protection_pca <- merge(protection, pca_conn_scores, by='net_id', all=F)
@@ -211,37 +214,37 @@ plot(protection_pca$GAP123_80pct_pct ~ protection_pca$PCconnall)
 
 cor(protection_pca[,c(7:10, 17:18)])
 
-# same analysis with PCA with DamRate variable
-protection_pca <- merge(protection, pca_conn_DR_scores, by='net_id', all=F)
-protection_pca$logscore <- log(protection_pca$PCconnall)
+# # same analysis with PCA with DamRate variable
+# protection_pca <- merge(protection, pca_conn_DR_scores, by='net_id', all=F)
+# protection_pca$logscore <- log(protection_pca$PCconnall)
+# 
+# plot(protection_pca$GAP12_ctr_pct ~ protection_pca$PCconnall)
+# plot(protection_pca$GAP123_ctr_pct ~ protection_pca$PCconnall)
+# plot(protection_pca$GAP12_80pct_pct ~ protection_pca$PCconnall)
+# plot(protection_pca$GAP123_80pct_pct ~ protection_pca$PCconnall)
+# 
+# cor(protection_pca[,c(7:10, 18:19)])
 
-plot(protection_pca$GAP12_ctr_pct ~ protection_pca$PCconnall)
-plot(protection_pca$GAP123_ctr_pct ~ protection_pca$PCconnall)
-plot(protection_pca$GAP12_80pct_pct ~ protection_pca$PCconnall)
-plot(protection_pca$GAP123_80pct_pct ~ protection_pca$PCconnall)
 
-cor(protection_pca[,c(7:10, 18:19)])
-
-
-### 3d plotting of PCA results
-library(rgl)
-protection_pca$WSA9 <- as.factor(protection_pca$WSA9)
-net_colors <- c('orange','lightcoral','khaki','lightgreen','gray60','dodgerblue','lightskyblue','forestgreen','yellow')
-protection_pca$color <- net_colors[ as.numeric(protection_pca$WSA9)]
-
-plot3d(protection_pca[,c(12:14)], col=protection_pca$color, pch=16)
-
-# trying another method
-library(scatterplot3d)
-
-s3d <- scatterplot3d(protection_pca[,c(12:14)], main='Network connectivity scores', 
-              color=protection_pca$color, pch=16, angle=55)
-legend(s3d$xyz.convert(-5.5,-3,9), legend=levels(protection_pca$WSA9), col=net_colors, pch=16, bty='n')
-
-# and another
-
-library(pca3d)
-pca3d(pca_conn, show.ellipses = T, show.plane = F)
-groups=protection_pca$WSA9
-pca3d(pca_conn, group=groups, legend='topleft')
+# ### 3d plotting of PCA results
+# library(rgl)
+# protection_pca$WSA9 <- as.factor(protection_pca$WSA9)
+# net_colors <- c('orange','lightcoral','khaki','lightgreen','gray60','dodgerblue','lightskyblue','forestgreen','yellow')
+# protection_pca$color <- net_colors[ as.numeric(protection_pca$WSA9)]
+# 
+# plot3d(protection_pca[,c(12:14)], col=protection_pca$color, pch=16)
+# 
+# # trying another method
+# library(scatterplot3d)
+# 
+# s3d <- scatterplot3d(protection_pca[,c(12:14)], main='Network connectivity scores', 
+#               color=protection_pca$color, pch=16, angle=55)
+# legend(s3d$xyz.convert(-5.5,-3,9), legend=levels(protection_pca$WSA9), col=net_colors, pch=16, bty='n')
+# 
+# # and another
+# 
+# library(pca3d)
+# pca3d(pca_conn, show.ellipses = T, show.plane = F)
+# groups=protection_pca$WSA9
+# pca3d(pca_conn, group=groups, legend='topleft')
 

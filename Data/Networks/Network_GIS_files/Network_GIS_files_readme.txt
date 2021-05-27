@@ -1,4 +1,4 @@
-Network GIS files zipped for space saving purposes
+##### Network GIS files zipped for space saving purposes #####
 
 All lake point shapefiles contain lakes >= 1ha
 GAPS1-2:strict protected area (managed for biodiversity)
@@ -12,9 +12,11 @@ GAP123_lake_pts.zip: all lakes that occur in US protected areas under GAPS1-3
 GAP123_lake_pts_net.zip: network lakes that occur in US protected areas under GAPS1-3
 GAP123_lake_pts_net_80pct.zip: network lakes with >= 80% of their watersheds occuring in US protected areas under GAPS1-3
 
+LAGOS_1ha_pts_networks.zip: network lakes >= 1 ha as points
+
 network_NARS.zip: lake networks assigned to National Aquatic Resource Survey (NARS) ecoregions (US EPA)
 
-Original data sources and resources:
+##### Original data sources and resources: #####
 Cheruvelil, K. S., Soranno, P. A., McCullough, I. M., Webster, K. E., Rodriguez, L. and N. J. Smith. 
 LAGOS-US LOCUS v1.0: Data module of location, identifiers, and physical characteristics of lakes and their 
 watersheds in the conterminous U.S. Limnology and Oceanography Letters(data paper in review).

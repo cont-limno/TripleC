@@ -24,3 +24,5 @@ Networks_analyze_ecoregion.R: network statistics by National Aquatic Resource Su
 
 Networks_assign_ecoregion.R: assign networks to National Aquatic Resource Survey ecoregions 
 
+Scripts that use GIS files reference directories on our system. You can find zipped GIS files in Data and adjust scripts accordingly.
+
