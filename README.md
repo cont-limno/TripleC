@@ -14,7 +14,7 @@ PADUS14: watershed lake protection from US Protected Areas Database v 1.4 (via L
 Folder for figures in the manuscript or exploratory figures
 
 # Rcode
-LakeNetworkProtectionAnalysis.R: analysis of protection of lakes and networks in the conterminous US
+LakeNetworkProtectionAnalysis.R: analysis of protection of lakes and networks in the conterminous US, freshwater connectivity and hub lakes
 
 LakeProtection.R: statistics on lake protection in the conterminous US
 
