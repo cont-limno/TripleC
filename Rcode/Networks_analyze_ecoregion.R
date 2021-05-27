@@ -10,6 +10,19 @@ setwd("C:/Users/FWL/Documents/TripleC")
 library(dplyr)
 
 #### Input data ####
+# Original data sources and resources:
+# Cheruvelil, K. S., Soranno, P. A., McCullough, I. M., Webster, K. E., Rodriguez, L. and N. J. Smith. 
+# LAGOS-US LOCUS v1.0: Data module of location, identifiers, and physical characteristics of lakes and their 
+# watersheds in the conterminous U.S. Limnology and Oceanography Letters(data paper in review).
+# 
+# King, K., Wang, Q., Rodriguez, L.K., Haite, M., Danila, L., Pang-Ning, T., Zhou, J., and Cheruvelil, K.S. under review. 
+# LAGOS-US NETWORKS v1.0: Data module of surface water networks characterizing connections among lakes, streams, and
+# rivers in the conterminous U.S. Environmental Data Initiative. 
+# https://portal-s.edirepository.org/nis/mapbrowse?scope=edi&identifier=213. Dataset accessed XX/XX/2021.
+# 
+# King, K., Wang, Q., Rodriguez, L.K., and Cheruvelil, K.S. under review. Lake networks and connectivity metrics
+# for the conterminous U.S. (LAGOS-US NETWORKS v1). Limnology and Oceanography Letters. 
+
 # LAGOS-US-NETWORKS by ecoregion and number of lakes
 networks_NARS <- read.csv("Data/Networks/networks_NARS_ecoregions.csv") #US EPA ecoregions from National Aquatic Resource Survey (NARS)
 # LAGOS-US-NETWORKS network connectivity metrics
