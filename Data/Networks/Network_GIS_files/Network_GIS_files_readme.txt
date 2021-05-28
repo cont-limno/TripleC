@@ -12,6 +12,8 @@ GAP123_lake_pts.zip: all lakes that occur in US protected areas under GAPS1-3
 GAP123_lake_pts_net.zip: network lakes that occur in US protected areas under GAPS1-3
 GAP123_lake_pts_net_80pct.zip: network lakes with >= 80% of their watersheds occuring in US protected areas under GAPS1-3
 
+Hub_lakes.shp: point shapefile of lakes >=1 ha designated as hubs
+
 LAGOS_1ha_pts_networks.zip: network lakes >= 1 ha as points
 
 network_NARS.zip: lake networks assigned to National Aquatic Resource Survey (NARS) ecoregions (US EPA)

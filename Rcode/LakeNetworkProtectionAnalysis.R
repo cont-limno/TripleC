@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by protected status #######################################
 # Date: 4-26-21
-# updated: 5-27-21
+# updated: 5-28-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -21,7 +21,8 @@ GAP12_lakes_net <- shapefile("C:/Ian_GIS/TripleC_GIS/ProtectedLakes/GAP12_lake_p
 GAP123_lakes_net <- shapefile("C:/Ian_GIS/TripleC_GIS/ProtectedLakes/GAP123_lake_pts_net.shp")
 GAP12_lakes_net80 <- shapefile("C:/Ian_GIS/TripleC_GIS/ProtectedLakes/GAP12_lake_pts_net_80pct.shp")
 GAP123_lakes_net80 <- shapefile("C:/Ian_GIS/TripleC_GIS/ProtectedLakes/GAP123_lake_pts_net_80pct.shp")
-hub_lakes <- read.csv("Data/Networks/VIP_lakes.csv")
+#hub_lakes <- read.csv("Data/Networks/VIP_lakes.csv") #without MS River network
+hub_lakes <- read.csv("Data/Networks/Hub_lakes_withMS.csv") #all hubs
 between_cent <- read.csv("Data/Networks/betweenness_out_full.csv")
 network_lakes_NARS_nonMS <- read.csv("Data/Networks/nLakes_networks_NARS_nonMS.csv")
 
@@ -237,7 +238,7 @@ prop_protection_NARS_melted %>%
   group_by(protection) %>%
   summarize(min=min(protection_pct), median=median(protection_pct), max=max(protection_pct))
 
-# how many netwokrs meet 17% Aichi target
+# how many networks meet 17% Aichi target
 aichi_networks <- subset(prop_protection_NARS_melted, protection_pct >= 17)
 
 aichi_networks_summary <- aichi_networks %>%
@@ -284,6 +285,8 @@ hub_lake_prop_protection$GAP123_80pct_pct <- (hub_lake_prop_protection$GAP123_80
 # isolated added GAP3 effect
 hub_lake_prop_protection$GAP3_ctr_only_pct <- hub_lake_prop_protection$GAP123_ctr_pct - hub_lake_prop_protection$GAP12_ctr_pct
 hub_lake_prop_protection$GAP3_80pct_only_pct <- hub_lake_prop_protection$GAP123_80pct_pct - hub_lake_prop_protection$GAP12_80pct_pct
+
+#write.csv(hub_lake_prop_protection, "Data/Networks/hub_lake_protection_NARS.csv")
 
 stacked_ctr_df <- melt(hub_lake_prop_protection[,c(1,7,8)], 'WSA9')
 stacked_80pct_df <- melt(hub_lake_prop_protection[,c(1,9,10)], 'WSA9')
@@ -473,6 +476,7 @@ cor(money_table$nHubs, money_table$net_dams_n, use='pairwise.complete.obs')
 # relationship between scores and hubs
 score_hub_df <- data.frame(PCconnall=money_table$PCconnall, nHubs=money_table$nHubs)
 score_hub_df <- subset(score_hub_df, nHubs > 0)
+par(mfrow=c(1,1))
 hist(score_hub_df$nHubs)
 cor(log(score_hub_df$PCconnall), log(score_hub_df$nHubs), use='pairwise.complete.obs')
 cor.test(log(score_hub_df$PCconnall), log(score_hub_df$nHubs), method='pearson')
