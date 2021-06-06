@@ -19,6 +19,7 @@ library(psych)
 library(cluster)
 library(factoextra)
 library(mapdata)
+library(scales)
 
 #### Input data ####
 # Original data sources and resources:
@@ -53,12 +54,16 @@ head(dat)
 # optionally add in betweenness centrality metric
 dat <- merge(dat, between_cent[,c(1,4)], by='net_id')
 dat$artic_pct <- dat$artic_count/dat$net_lakes_n
-dat$artic_pct_inv <- 1-dat$artic_pct # make it so higher number represents greater resistance to fragmentation
+#dat$artic_pct_inv <- 1-dat$artic_pct # make it so higher number represents greater resistance to fragmentation
+dat$artic_pct_inv <- scales::rescale(dat$artic_pct, to=c(1,0.01))
+hist(dat$artic_pct)
+hist(dat$artic_pct_inv)
 
 # calcuate dam rate variable
 dat$DamRate <- dat$net_dams_n/dat$net_lakes_n
 hist(dat$DamRate)
-dat$DamRate_inv <- 1-dat$DamRate #make it so more dams is bad for score
+dat$DamRate_inv <- scales::rescale(dat$DamRate, to=c(1,0.01))
+#dat$DamRate_inv <- 1-dat$DamRate #make it so more dams is bad for score
 hist(dat$DamRate_inv)
 
 # Remove 1 NA value
@@ -107,8 +112,8 @@ fviz_pca_ind(pca_conn, addEllipses = T)
 # To get a composite of first 2 components, can do pythagorean on scores for PCs 1 and 2, but also can extend pythagorean theorem to use all axes
 pca_conn_scores <- as.data.frame(scores(pca_conn))
 pca_conn_scores$PCconnall <- sqrt((pca_conn_scores$Comp.1 ^2) + (pca_conn_scores$Comp.2 ^2) + 
-                                     (pca_conn_scores$Comp.3 ^2))# + (pca_conn_scores$Comp.4 ^2) + 
-                                     #(pca_conn_scores$Comp.5 ^2))
+                                     (pca_conn_scores$Comp.3 ^2) + (pca_conn_scores$Comp.4 ^2) + 
+                                     (pca_conn_scores$Comp.5 ^2))
 hist(pca_conn_scores$PCconnall, main='Network connectivity scores')
 pca_conn_scores$net_id <- rownames(clus_dat)
 
@@ -145,7 +150,7 @@ pca_conn_scores.point3 + geom_path(data=states_shp,aes(long,lat,group=group),col
 
 # ## PCA with Dam Rate variable
 pca_conn_DR <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct_inv + DamRate_inv,
-                        data=clus_dat, cor=T, scores=T)
+                        data=dat, cor=T, scores=T)
 par(mfrow=c(1,1))
 screeplot(pca_conn_DR, type='l')
 summary(pca_conn_DR)
@@ -217,12 +222,12 @@ cor(protection_pca[,c(7:10, 17:18)])
 # # same analysis with PCA with DamRate variable
 # protection_pca <- merge(protection, pca_conn_DR_scores, by='net_id', all=F)
 # protection_pca$logscore <- log(protection_pca$PCconnall)
-# 
+#
 # plot(protection_pca$GAP12_ctr_pct ~ protection_pca$PCconnall)
 # plot(protection_pca$GAP123_ctr_pct ~ protection_pca$PCconnall)
 # plot(protection_pca$GAP12_80pct_pct ~ protection_pca$PCconnall)
 # plot(protection_pca$GAP123_80pct_pct ~ protection_pca$PCconnall)
-# 
+#
 # cor(protection_pca[,c(7:10, 18:19)])
 
 
@@ -231,18 +236,18 @@ cor(protection_pca[,c(7:10, 17:18)])
 # protection_pca$WSA9 <- as.factor(protection_pca$WSA9)
 # net_colors <- c('orange','lightcoral','khaki','lightgreen','gray60','dodgerblue','lightskyblue','forestgreen','yellow')
 # protection_pca$color <- net_colors[ as.numeric(protection_pca$WSA9)]
-# 
+#
 # plot3d(protection_pca[,c(12:14)], col=protection_pca$color, pch=16)
-# 
+#
 # # trying another method
 # library(scatterplot3d)
-# 
-# s3d <- scatterplot3d(protection_pca[,c(12:14)], main='Network connectivity scores', 
+#
+# s3d <- scatterplot3d(protection_pca[,c(12:14)], main='Network connectivity scores',
 #               color=protection_pca$color, pch=16, angle=55)
 # legend(s3d$xyz.convert(-5.5,-3,9), legend=levels(protection_pca$WSA9), col=net_colors, pch=16, bty='n')
-# 
+#
 # # and another
-# 
+#
 # library(pca3d)
 # pca3d(pca_conn, show.ellipses = T, show.plane = F)
 # groups=protection_pca$WSA9
