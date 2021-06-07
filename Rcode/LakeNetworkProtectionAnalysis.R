@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by protected status #######################################
 # Date: 4-26-21
-# updated: 5-28-21
+# updated: 6-7-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -381,7 +381,7 @@ cormat <- as.data.frame(cor(conn_protection[2:14], use='pairwise.complete.obs',m
 
 ## Relationship between network connectivity scores and hub lakes
 # analysis of both networks with just high scores and all networks with scores
-pca_Scores <- read.csv("Data/Networks/pca_network_conn_scores.csv")[,c(7,8)]
+pca_Scores <- read.csv("Data/Networks/pca_network_conn_scores_wDamRate.csv")[,c(9,10)]
 
 pca_Scores_hubs <- merge(hub_lakes_NARS[,c(1:2)], pca_Scores, by='net_id', all=T)
 length(unique(pca_Scores_hubs$net_id))
@@ -523,11 +523,11 @@ cor(log_table$logscore, log_table$logDamRate, use='pairwise.complete.obs', metho
 summary(lm(log_table$logscore ~ log_table$logDamRate))
 
 # supplemental figure showing log connectivity score vs. log dam rate
-jpeg('Figures/network_conn_score_dam_rateLOG.jpeg',width = 7,height = 5,units = 'in',res=300)
-plot(log(money_table$PCconnall) ~ log(money_table$DamRate), pch=16, xlab='log(Dam rate)', las=1,
-     ylab='log(Network connectivity score)', col=money_table$color)
-legend('topleft',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=3)
-dev.off()
+# jpeg('Figures/network_conn_score_dam_rateLOG.jpeg',width = 7,height = 5,units = 'in',res=300)
+# plot(log(money_table$PCconnall) ~ log(money_table$DamRate), pch=16, xlab='log(Dam rate)', las=1,
+#      ylab='log(Network connectivity score)', col=money_table$color)
+# legend('topleft',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=3)
+# dev.off()
 
 plot(log(money_table$PCconnall) ~ log(money_table$net_dams_n), pch=16, xlab='log(Dams)', las=1,
      ylab='log(Network connectivity score)', col=money_table$color)
@@ -557,132 +557,3 @@ legend('topright',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=
 abline(v=median(money_table$DamRate), lty=2)
 abline(h=median(money_table$PCconnall), lty=2)
 cor(money_table$PCconnall, money_table$DamRate, method='pearson', use='pairwise.complete.obs')
-
-### analysis for PCA scores with DamRate variable + protection, same as above just with DamRate in PCA
-# pca_DR_Scores <- read.csv("Data/Networks/pca_network_conn_scores_wDamRate.csv")[,8:9]
-# 
-# pca_DR_Scores_hubs <- merge(hub_lakes_NARS[,c(1:2)], pca_DR_Scores, by='net_id', all=T)
-# length(unique(pca_DR_Scores_hubs$net_id))
-# 
-# pca_DR_hiScores_hubs <- subset(pca_DR_Scores_hubs, PCconnall > 4)
-# length(unique(pca_DR_hiScores_hubs$net_id))
-# 
-# # how many hubs in high-score networks? Appears smallest hub net_id 106 (WA state) has no hubs
-# pca_DR_hiScores_hubs_summary <- pca_DR_hiScores_hubs %>%
-#   group_by(net_id) %>%
-#   summarize(nHubs=n())
-# 
-# pca_allScores_hubs_summary <- pca_DR_Scores_hubs %>%
-#   group_by(net_id) %>%
-#   summarize(nHubs=sum(!is.na(lagoslakeid)))
-# 
-# # how well protected are these hubs in high-score networks?
-# hiScores_hubs_protection <- merge(pca_DR_hiScores_hubs, hub_lake_protection, by='lagoslakeid')
-# 
-# hiScores_hubs_protection_summary <- hiScores_hubs_protection %>%
-#   group_by(net_id.x) %>%
-#   summarize(GAP12_ctr=sum(GAP12_ctr),
-#             GAP123_ctr=sum(GAP123_ctr),
-#             GAP12_80pct=sum(GAP12_80pct),
-#             GAP123_80pct=sum(GAP123_80pct))
-# 
-# colnames(hiScores_hubs_protection_summary) <- c('net_id','GAP12_ctr','GAP123_ctr','GAP12_80pct','GAP123_80pct')
-# 
-# hiScores_hubs_protection_summary <- merge(hiScores_hubs_protection_summary, pca_DR_hiScores_hubs_summary, by='net_id')
-# 
-# # calculate % of hubs protected in each network
-# hiScores_hubs_protection_summary$GAP12_ctr_pct <- round((hiScores_hubs_protection_summary$GAP12_ctr/hiScores_hubs_protection_summary$nHubs)*100,2)
-# hiScores_hubs_protection_summary$GAP123_ctr_pct <- round((hiScores_hubs_protection_summary$GAP123_ctr/hiScores_hubs_protection_summary$nHubs)*100,2)
-# hiScores_hubs_protection_summary$GAP12_80pct_pct <- round((hiScores_hubs_protection_summary$GAP12_80pct/hiScores_hubs_protection_summary$nHubs)*100,2)
-# hiScores_hubs_protection_summary$GAP123_80pct_pct <- round((hiScores_hubs_protection_summary$GAP123_80pct/hiScores_hubs_protection_summary$nHubs)*100,2)
-# 
-# test <- merge(hiScores_hubs_protection_summary, dat, by='net_id', all=F)
-# test <- merge(test, networks_NARS[,c(1:2)], by='net_id', all=F)
-# test <- merge(test, pca_DR_Scores, by='net_id', all=F)
-# 
-# #write.csv(test, "Data/Networks/HighScoreNetworkStats.csv", row.names=F)
-# 
-# ## How about another table of all networks, netricks, scores and protection of networks and hubs
-# # Maybe can focus on top-scoring networks in MS
-# 
-# # First do same analysis as above, but for all scored networks:
-# # how well protected are these hubs in scored networks?
-# allScores_hubs_protection <- merge(pca_DR_Scores_hubs, hub_lake_protection, by='lagoslakeid', all=T)
-# 
-# allScores_hubs_protection_summary <- allScores_hubs_protection %>%
-#   group_by(net_id.x) %>%
-#   summarize(GAP12_ctr=sum(GAP12_ctr),
-#             GAP123_ctr=sum(GAP123_ctr),
-#             GAP12_80pct=sum(GAP12_80pct),
-#             GAP123_80pct=sum(GAP123_80pct))
-# 
-# colnames(allScores_hubs_protection_summary) <- c('net_id','GAP12_ctr','GAP123_ctr','GAP12_80pct','GAP123_80pct')
-# 
-# allScores_hubs_protection_summary <- merge(allScores_hubs_protection_summary, pca_allScores_hubs_summary, by='net_id')
-# 
-# # calculate % of hubs protected in each network
-# allScores_hubs_protection_summary$GAP12_ctr_pct <- round((allScores_hubs_protection_summary$GAP12_ctr/allScores_hubs_protection_summary$nHubs)*100,2)
-# allScores_hubs_protection_summary$GAP123_ctr_pct <- round((allScores_hubs_protection_summary$GAP123_ctr/allScores_hubs_protection_summary$nHubs)*100,2)
-# allScores_hubs_protection_summary$GAP12_80pct_pct <- round((allScores_hubs_protection_summary$GAP12_80pct/allScores_hubs_protection_summary$nHubs)*100,2)
-# allScores_hubs_protection_summary$GAP123_80pct_pct <- round((allScores_hubs_protection_summary$GAP123_80pct/allScores_hubs_protection_summary$nHubs)*100,2)
-# 
-# test2 <- merge(allScores_hubs_protection_summary, dat, by='net_id', all=F)
-# test2 <- merge(test2, networks_NARS[,c(1:2)], by='net_id', all=F)
-# test2 <- merge(test2, pca_DR_Scores, by='net_id', all=F)
-# 
-# # final merging
-# layover <- conn_protection[,c(1,11:14)]
-# colnames(layover) <- c('net_id','net_GAP12_ctr_pct','net_GAP123_ctr_pct','net_GAP12_80pct_pct','net_GAP123_80pct_pct')
-# money_table <- merge(test2, layover, by='net_id', all=F)
-# 
-# #write.csv(money_table, file='Data/Networks/network_hub_protection_and_scores_wDamRate.csv', row.names=F)
-# 
-# # exploratory analysis
-# #par(mfrow=c(2,2))
-# plot(money_table$PCconnall ~ money_table$net_dams_n, pch=16)
-# plot(money_table$PCconnall ~ money_table$nHubs, pch=16)
-# plot(money_table$nHubs ~ money_table$net_dams_n, pch=16)
-# plot(money_table$nHubs ~ money_table$net_lakes_n, pch=16)
-# 
-# cor(money_table$PCconnall, money_table$net_dams_n, use='pairwise.complete.obs')
-# cor(money_table$PCconnall, money_table$nHubs, use='pairwise.complete.obs')
-# cor(money_table$PCconnall, money_table$net_lakes_n, use='pairwise.complete.obs')
-# cor(money_table$net_lakes_n, money_table$net_dams_n, use='pairwise.complete.obs')
-# cor(money_table$net_lakes_n, money_table$nHubs, use='pairwise.complete.obs')
-# cor(money_table$nHubs, money_table$net_dams_n, use='pairwise.complete.obs')
-# 
-# money_table$LakesHubs_pct <- money_table$nHubs/money_table$net_lakes_n
-# hist(money_table$LakesHubs_pct)
-# money_table$HubDam_pct <- money_table$nHubs/money_table$net_dams_n
-# hist(money_table$HubDam_pct)
-# money_table$HubRate <- money_table$nHubs/money_table$net_lakes_n
-# hist(money_table$HubRate)
-# money_table$DamRate <- money_table$net_dams_n/money_table$net_lakes_n
-# hist(money_table$DamRate)
-# 
-# cor(money_table[,c(6:19, 21:29)], use='pairwise.complete.obs')
-# 
-# plot(money_table$PCconnall ~ money_table$LakesHubs_pct, pch=16)
-# plot(money_table$PCconnall ~ money_table$HubRate, pch=16)
-# plot(log(money_table$PCconnall) ~ log(money_table$DamRate), pch=16)
-# plot(log(money_table$PCconnall) ~ log(money_table$HubRate), pch=16)
-# 
-# 
-# # erm maybe 2d is better
-# plot(log(money_table$PCconnall) ~ log(money_table$HubDam_pct), pch=16, xlab='log(Hub/dam ratio)', las=1,
-#      ylab='Network connectivity score', col=money_table$color)
-# legend('topright',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=3)
-# cor(money_table$PCconnall, money_table$HubDam_pct, method='pearson', use='pairwise.complete.obs')
-# 
-# 
-# plot(log(money_table$PCconnall) ~ log(money_table$DamRate), pch=16, xlab='log(Dam rate)', las=1,
-#      ylab='log(Network connectivity score)', col=money_table$color)
-# legend('topleft',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=3)
-# 
-# plot(log(money_table$PCconnall) ~ log(money_table$net_dams_n), pch=16, xlab='log(Dams)', las=1,
-#      ylab='log(Network connectivity score)', col=money_table$color)
-# legend('topleft',legend=levels(money_table$WSA9), col=net_colors, pch=16, ncol=3)
-# 
-# # untransformed data
-# summary(money_table$PCconnall)
-# summary(money_table$DamRate)
