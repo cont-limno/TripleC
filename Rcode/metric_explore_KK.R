@@ -12,7 +12,7 @@ library(mapdata)
 
 #### Input data ####
 #LAGOS_NETWORKS_v1 all lakes 
-lagos_networks_all <- read.csv("Data/Networks/nets_networkmetrics_medres.csv") %>%
+lagos_networks_all <- read.csv("Data/Networks/nets_networkmetrics_medres.csv") 
 #just network data
 lagos_networks<-lagos_networks_all[!duplicated(paste(lagos_networks_all$net_id)),] %>% 
   dplyr::select(lagoslakeid, net_id, net_lakes_n, net_averagelakedistance_km, net_averagelakearea_ha, net_dams_n, lake_nets_lnn, lake_nets_lakeorder )
@@ -357,8 +357,9 @@ MI+geom_point(data=net_dd_temp, size = 1, aes(x = lake_lon_decdeg, y = lake_lat_
   theme(legend.position = c(0.2, 0.4))
 
 
-#### hub lake characteristics #### 
+#### dams on hub lakes #### 
 hub_char<-left_join(hub_lakes, lagos_networks_all)
+
 #new columns for directly up or down dam 
 hub_char <- hub_char %>%
   mutate(down_dam = case_when(is.na(lake_nets_nearestdamdown_km) ~ "N",   #if ~ then 
@@ -368,20 +369,19 @@ hub_char <- hub_char %>%
                             TRUE ~"Y"
   ))
 
-dam_flag<-hub_char %>% 
-            count(lake_nets_damonlake_flag) 
-dam_flag<-hub_char %>% 
-  count(down_dam) 
-dam_flag<-hub_char %>% 
-  count(up_dam) 
+# summary of hub_char table to see how many hub lakes have dams
+hub_char$down_dam<-as.factor(hub_char$down_dam)
+hub_char$up_dam<-as.factor(hub_char$up_dam)
+summary(hub_char)
 
+#figure of dams in relation to hub lakes 
 category  <- c("dam_on_lake", "down_dam", "up_dam")
 no <- c(1305, 512, 1007)
 yes <- c(357, 1150, 655)
 df <- data.frame(category, no, yes)
 df_long <- reshape2::melt(df, id = "category")
 
-#lot dams on lake, upstream dam, downstream dam 
+#plot dams on lake, upstream dam, downstream dam 
 ggplot(df_long, aes(x = category, y = value, fill = variable, label = value)) +
   geom_bar(stat = "identity") +
   geom_text(size = 3, position = position_stack(vjust = 0.5))
@@ -397,3 +397,8 @@ hist(hub_char$lake_nets_totaldamup_n)
 hist(hub_char$lake_nets_totaldamdown_n) 
 
 summary(hub_char)
+hub_nets<-hub_char[!duplicated(paste(hub_char$net_id)),] #hub networks 246 networks with hub lakes 
+
+#### dams on networks with conny scores #### 
+nets_with_conn<-filter(lagos_networks, net_lakes_n > 4)
+net_with_no_dams<-filter(nets_with_conn, net_dams_n == 0)
