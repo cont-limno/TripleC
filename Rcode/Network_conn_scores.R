@@ -1,12 +1,11 @@
 ###################### Connectivity scores for LAGOS-US-NETWORKS ###############################
 # Date: 5-4-21
-# updated: 6-4-21
+# updated: 6-7-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
 setwd("C:/Users/FWL/Documents/TripleC")
 
-# rm(list=ls())
 #### R libraries ####
 library(dplyr)
 library(raster)
@@ -91,66 +90,66 @@ cor(clus_dat)
 # for now, removing dams and artic count (highly correlated with number of lakes)
 # avg lake dist highly correlated with mxkmNS and number of lakes
 # took out range order because it's more about network characteristics rather than conn
-pca_conn <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct_inv, 
-                      data=clus_dat, cor=T, scores=T)
-par(mfrow=c(1,1))
-screeplot(pca_conn, type='l')
-summary(pca_conn)
-loadings(pca_conn)
-eigenvals(pca_conn)
+# pca_conn <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct_inv, 
+#                       data=clus_dat, cor=T, scores=T)
+# par(mfrow=c(1,1))
+# screeplot(pca_conn, type='l')
+# summary(pca_conn)
+# loadings(pca_conn)
+# eigenvals(pca_conn)
+# 
+# fviz_pca_var(pca_conn,
+#              col.var = "contrib", # Color by contributions to the PC
+#              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+#              repel = TRUE     # Avoid text overlapping
+# )
+# 
+# fviz_pca_biplot(pca_conn, addEllipses = T)
+# 
+# fviz_pca_ind(pca_conn, addEllipses = T)
+# 
+# # To get a composite of first 2 components, can do pythagorean on scores for PCs 1 and 2, but also can extend pythagorean theorem to use all axes
+# pca_conn_scores <- as.data.frame(scores(pca_conn))
+# pca_conn_scores$PCconnall <- sqrt((pca_conn_scores$Comp.1 ^2) + (pca_conn_scores$Comp.2 ^2) + 
+#                                      (pca_conn_scores$Comp.3 ^2) + (pca_conn_scores$Comp.4 ^2) + 
+#                                      (pca_conn_scores$Comp.5 ^2))
+# hist(pca_conn_scores$PCconnall, main='Network connectivity scores')
+# pca_conn_scores$net_id <- rownames(clus_dat)
+# 
+# # save nice conn score histogram
+# jpeg('Figures/conn_score_histogram.jpeg',width = 7,height = 5,units = 'in',res=300)
+#   hist(pca_conn_scores$PCconnall, main='Network connectivity scores', 
+#        xlab='Score', las=1, breaks=seq(0,14,1), cex.main=2, cex.lab=1.5, cex.axis=1.5,
+#        col=c('khaki','khaki','mediumseagreen','mediumseagreen',
+#              'navy','navy','navy','navy','navy','navy','navy','navy','navy','navy'))
+# dev.off()
 
-fviz_pca_var(pca_conn,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-)
-
-fviz_pca_biplot(pca_conn, addEllipses = T)
-
-fviz_pca_ind(pca_conn, addEllipses = T)
-
-# To get a composite of first 2 components, can do pythagorean on scores for PCs 1 and 2, but also can extend pythagorean theorem to use all axes
-pca_conn_scores <- as.data.frame(scores(pca_conn))
-pca_conn_scores$PCconnall <- sqrt((pca_conn_scores$Comp.1 ^2) + (pca_conn_scores$Comp.2 ^2) + 
-                                     (pca_conn_scores$Comp.3 ^2) + (pca_conn_scores$Comp.4 ^2) + 
-                                     (pca_conn_scores$Comp.5 ^2))
-hist(pca_conn_scores$PCconnall, main='Network connectivity scores')
-pca_conn_scores$net_id <- rownames(clus_dat)
-
-# save nice conn score histogram
-jpeg('Figures/conn_score_histogram.jpeg',width = 7,height = 5,units = 'in',res=300)
-  hist(pca_conn_scores$PCconnall, main='Network connectivity scores', 
-       xlab='Score', las=1, breaks=seq(0,14,1), cex.main=2, cex.lab=1.5, cex.axis=1.5,
-       col=c('khaki','khaki','mediumseagreen','mediumseagreen',
-             'navy','navy','navy','navy','navy','navy','navy','navy','navy','navy'))
-dev.off()
-
-# Mapping scores
-pca_conn_scores_shp <- merge(lake_network_pts, pca_conn_scores, by='net_id', all.x=F)
-pca_conn_scores_shp_df <- as.data.frame(pca_conn_scores_shp@data)
-pca_conn_scores_shp_df$xCor <- pca_conn_scores_shp@coords[,1]
-pca_conn_scores_shp_df$yCor <- pca_conn_scores_shp@coords[,2]
-
-pca_conn_scores.point3<-ggplot(pca_conn_scores_shp_df, aes(x=xCor,y=yCor))+
-  geom_point(aes(colour=PCconnall), size=2) +
-  ggtitle('Network conn score')
-pca_conn_scores.point3$labels$colour = 'Score' # change legend title
-pca_conn_scores.point3 + geom_path(data=states_shp,aes(long,lat,group=group),colour='black') + coord_equal()+
-  #scale_colour_brewer(palette = 'Set1') +
-  scale_color_continuous(low='firebrick', high='dodgerblue')+
-  theme_bw() + 
-  theme(axis.text = element_blank(),
-        axis.line = element_blank(),
-        axis.ticks = element_blank(),
-        #panel.border = element_blank(),
-        panel.grid = element_blank(),
-        axis.title = element_blank())
+# # Mapping scores
+# pca_conn_scores_shp <- merge(lake_network_pts, pca_conn_scores, by='net_id', all.x=F)
+# pca_conn_scores_shp_df <- as.data.frame(pca_conn_scores_shp@data)
+# pca_conn_scores_shp_df$xCor <- pca_conn_scores_shp@coords[,1]
+# pca_conn_scores_shp_df$yCor <- pca_conn_scores_shp@coords[,2]
+# 
+# pca_conn_scores.point3<-ggplot(pca_conn_scores_shp_df, aes(x=xCor,y=yCor))+
+#   geom_point(aes(colour=PCconnall), size=2) +
+#   ggtitle('Network conn score')
+# pca_conn_scores.point3$labels$colour = 'Score' # change legend title
+# pca_conn_scores.point3 + geom_path(data=states_shp,aes(long,lat,group=group),colour='black') + coord_equal()+
+#   #scale_colour_brewer(palette = 'Set1') +
+#   scale_color_continuous(low='firebrick', high='dodgerblue')+
+#   theme_bw() + 
+#   theme(axis.text = element_blank(),
+#         axis.line = element_blank(),
+#         axis.ticks = element_blank(),
+#         #panel.border = element_blank(),
+#         panel.grid = element_blank(),
+#         axis.title = element_blank())
 
 #write.csv(pca_conn_scores, file='Data/Networks/pca_network_conn_scores.csv')
 
 # ## PCA with Dam Rate variable
-pca_conn_DR <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct_inv + DamRate_inv,
-                        data=dat, cor=T, scores=T)
+pca_conn_DR <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct_inv + DamRate_inv + maxkmNS,
+                        data=clus_dat, cor=T, scores=T)
 par(mfrow=c(1,1))
 screeplot(pca_conn_DR, type='l')
 summary(pca_conn_DR)
@@ -163,20 +162,31 @@ fviz_pca_var(pca_conn_DR,
              repel = TRUE     # Avoid text overlapping
 )
 
+# parallel analysis to determine number of PCs to "retain":
+# https://www.r-bloggers.com/2016/04/determining-the-number-of-factors-with-parallel-analysis-in-r/
+library(relimp, pos = 4)
+library(paran)
+
+paran(clus_dat[c("edge_dens","min_cut_lat","net_lakes_n","vert_btwn_centr_norm_mean",
+                 "artic_pct_inv","DamRate_inv", "maxkmNS")], iterations = 5000, centile = 0, quietly = FALSE, 
+      status = TRUE, all = TRUE, cfa = FALSE, graph = TRUE, color = TRUE, 
+      col = c("black", "red", "blue"), lty = c(1, 2, 3), lwd = 1, legend = TRUE, 
+      width = 640, height = 640, grdevice = "png", seed = 0)
+
 
 # To get a composite of first 2 components, can do pythagorean on scores for PCs 1 and 2, but also can extend pythagorean theorem to use all axes
 pca_conn_DR_scores <- as.data.frame(scores(pca_conn_DR))
-pca_conn_DR_scores$PCconnall <- sqrt((pca_conn_DR_scores$Comp.1 ^2) + (pca_conn_DR_scores$Comp.2 ^2) +
-                                       (pca_conn_DR_scores$Comp.3 ^2) + (pca_conn_DR_scores$Comp.4 ^2) +
-                                       (pca_conn_DR_scores$Comp.5 ^2) + (pca_conn_DR_scores$Comp.6 ^2))
-#(pca_conn_DR_scores$Comp.5 ^2))
+pca_conn_DR_scores$PCconnall <- sqrt((pca_conn_DR_scores$Comp.1 ^2) + (pca_conn_DR_scores$Comp.2 ^2))# +
+                                       #(pca_conn_DR_scores$Comp.3 ^2) + (pca_conn_DR_scores$Comp.4 ^2) +
+                                       #(pca_conn_DR_scores$Comp.5 ^2) + (pca_conn_DR_scores$Comp.6 ^2))
+
 hist(pca_conn_DR_scores$PCconnall, main='Network connectivity scores')
 pca_conn_DR_scores$net_id <- rownames(clus_dat)
 
 # save nice conn score histogram
 jpeg('Figures/conn_score_histogram_wDamRate.jpeg',width = 7,height = 5,units = 'in',res=300)
 hist(pca_conn_DR_scores$PCconnall, main='Network connectivity scores',
-     xlab='Score', las=1, breaks=seq(0,14,1), cex.main=2, cex.lab=1.5, cex.axis=1.5,
+     xlab='Score', las=1, breaks=seq(0,10,1), cex.main=2, cex.lab=1.5, cex.axis=1.5,
      col=c('khaki','khaki','mediumseagreen','mediumseagreen',
            'navy','navy','navy','navy','navy','navy','navy','navy','navy','navy'))
 dev.off()
@@ -209,7 +219,7 @@ pca_conn_DR_scores.point3 + geom_path(data=states_shp,aes(long,lat,group=group),
 protection <- read.csv("Data/Networks/network_protection.csv") #(from LakeNetworkProtectionAnalysis.R)
 protection <- protection[,-1]
 
-protection_pca <- merge(protection, pca_conn_scores, by='net_id', all=F)
+protection_pca <- merge(protection, pca_conn_DR_scores, by='net_id', all=F)
 protection_pca$logscore <- log(protection_pca$PCconnall)
 
 plot(protection_pca$GAP12_ctr_pct ~ protection_pca$PCconnall)
@@ -217,7 +227,7 @@ plot(protection_pca$GAP123_ctr_pct ~ protection_pca$PCconnall)
 plot(protection_pca$GAP12_80pct_pct ~ protection_pca$PCconnall)
 plot(protection_pca$GAP123_80pct_pct ~ protection_pca$PCconnall)
 
-cor(protection_pca[,c(7:10, 17:18)])
+cor(protection_pca[,c(7:10, 18:19)])
 
 # # same analysis with PCA with DamRate variable
 # protection_pca <- merge(protection, pca_conn_DR_scores, by='net_id', all=F)
