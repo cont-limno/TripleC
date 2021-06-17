@@ -10,6 +10,8 @@ Networks: input and output tables related to freshwater networks, GIS point shap
 
 PADUS14: watershed lake protection from US Protected Areas Database v 1.4 (via LAGOS-US-GEO)
 
+LAGOSUS_RSVR_v1.1_classes.csv: manual and residual neural network classifications of LAGOS lakes >= 4 hectares
+
 # Figures
 Folder for figures in the manuscript or exploratory figures
 
