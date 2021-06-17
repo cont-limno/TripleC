@@ -76,7 +76,7 @@ netricks_NARS <- merge(dat, networks_NARS[,c(1,2)], by='net_id')
 netricks_stats <- netricks_NARS %>% 
   group_by(WSA9) %>%
   summarize(min_nLakes=min(net_lakes_n), median_nLakes=round(median(net_lakes_n),0), max_nLakes=max(net_lakes_n), n=n(),
-            minNS=round(min(maxkmNS, na.rm=T),0), medianNS=round(median(maxkmNS, na.rm=T),0), maxNS=round(max(maxkmNS, na.rm=T),0),
+            minNS=round(min(maxkmNS, na.rm=T),1), medianNS=round(median(maxkmNS, na.rm=T),1), maxNS=round(max(maxkmNS, na.rm=T),1),
             minDams=min(net_dams_n), medianDams=round(median(net_dams_n),0), maxDams=max(net_dams_n),
             minartic=round(min(artic_pct),3), medianartic=round(median(artic_pct),3), maxartic=round(max(artic_pct),3),
             min_latcuts=min(min_cut_lat), median_latcuts=median(min_cut_lat), max_latcuts=max(min_cut_lat))
