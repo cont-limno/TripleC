@@ -1,6 +1,6 @@
 ###################### Connectivity scores for LAGOS-US-NETWORKS ###############################
 # Date: 5-4-21
-# updated: 6-7-21
+# updated: 6-17-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -121,7 +121,7 @@ cor(clus_dat)
 #   hist(pca_conn_scores$PCconnall, main='Network connectivity scores', 
 #        xlab='Score', las=1, breaks=seq(0,14,1), cex.main=2, cex.lab=1.5, cex.axis=1.5,
 #        col=c('khaki','khaki','mediumseagreen','mediumseagreen',
-#              'navy','navy','navy','navy','navy','navy','navy','navy','navy','navy'))
+#              'dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3'))
 # dev.off()
 
 # # Mapping scores
@@ -184,11 +184,11 @@ hist(pca_conn_DR_scores$PCconnall, main='Network connectivity scores')
 pca_conn_DR_scores$net_id <- rownames(clus_dat)
 
 # save nice conn score histogram
-jpeg('Figures/conn_score_histogram_wDamRate.jpeg',width = 7,height = 5,units = 'in',res=300)
+tiff('Figures/conn_score_histogram_wDamRate.tif',width = 7,height = 5,units = 'in',res=300)
 hist(pca_conn_DR_scores$PCconnall, main='Network connectivity scores',
-     xlab='Score', las=1, breaks=seq(0,10,1), cex.main=2, cex.lab=1.5, cex.axis=1.5,
+     xlab='Score', las=1, breaks=seq(0,10,1), cex.main=1.5, cex.lab=1, cex.axis=1,
      col=c('khaki','khaki','mediumseagreen','mediumseagreen',
-           'navy','navy','navy','navy','navy','navy','navy','navy','navy','navy'))
+           'dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3'))
 dev.off()
 # 
 # 
