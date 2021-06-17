@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by NARS ecoregion #########################################
 # Date: 4-26-21
-# updated: 5-27-21
+# updated: 6-17-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -78,14 +78,14 @@ netricks_stats <- netricks_NARS %>%
   summarize(min_nLakes=min(net_lakes_n), median_nLakes=round(median(net_lakes_n),0), max_nLakes=max(net_lakes_n), n=n(),
             minNS=round(min(maxkmNS, na.rm=T),0), medianNS=round(median(maxkmNS, na.rm=T),0), maxNS=round(max(maxkmNS, na.rm=T),0),
             minDams=min(net_dams_n), medianDams=round(median(net_dams_n),0), maxDams=max(net_dams_n),
-            minartic=round(min(artic_pct),2), medianartic=round(median(artic_pct),2), maxartic=round(max(artic_pct),2),
+            minartic=round(min(artic_pct),3), medianartic=round(median(artic_pct),3), maxartic=round(max(artic_pct),3),
             min_latcuts=min(min_cut_lat), median_latcuts=median(min_cut_lat), max_latcuts=max(min_cut_lat))
 
-netricks_stats$combined_col_nLakes <- paste0(netricks_stats$min_nLakes, ', ', netricks_stats$median_nLakes, ', ', netricks_stats$max_nLakes)
-netricks_stats$combined_colNS <- paste0(netricks_stats$minNS, ', ', netricks_stats$medianNS, ', ', netricks_stats$maxNS)
-netricks_stats$combined_colDams <- paste0(netricks_stats$minDams, ', ', netricks_stats$medianDams, ', ', netricks_stats$maxDams)
-netricks_stats$combined_colartic <- paste0(netricks_stats$minartic, ', ', netricks_stats$medianartic, ', ', netricks_stats$maxartic)
-netricks_stats$combined_collatcuts <- paste0(netricks_stats$min_latcuts, ', ', netricks_stats$median_latcuts, ', ', netricks_stats$max_latcuts)
+#netricks_stats$combined_col_nLakes <- paste0(netricks_stats$min_nLakes, ', ', netricks_stats$median_nLakes, ', ', netricks_stats$max_nLakes)
+#netricks_stats$combined_colNS <- paste0(netricks_stats$minNS, ', ', netricks_stats$medianNS, ', ', netricks_stats$maxNS)
+#netricks_stats$combined_colDams <- paste0(netricks_stats$minDams, ', ', netricks_stats$medianDams, ', ', netricks_stats$maxDams)
+#netricks_stats$combined_colartic <- paste0(netricks_stats$minartic, ', ', netricks_stats$medianartic, ', ', netricks_stats$maxartic)
+#netricks_stats$combined_collatcuts <- paste0(netricks_stats$min_latcuts, ', ', netricks_stats$median_latcuts, ', ', netricks_stats$max_latcuts)
 
 # Export summary table of network stats by NARS ecoregions
 # Part of supplemental table 1
