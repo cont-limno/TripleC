@@ -15,6 +15,9 @@ LAGOSUS_RSVR_v1.1_classes.csv: manual and residual neural network classification
 # Figures
 Folder for figures in the manuscript or exploratory figures
 
+# MS_materials
+Folder for manuscript documents
+
 # Rcode
 LakeNetworkProtectionAnalysis.R: analysis of protection of lakes and networks in the conterminous US, freshwater connectivity and hub lakes
 
