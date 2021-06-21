@@ -29,5 +29,9 @@ Networks_analyze_ecoregion.R: network statistics by National Aquatic Resource Su
 
 Networks_assign_ecoregion.R: assign networks to National Aquatic Resource Survey ecoregions 
 
+dam_summaries.R: summaries of dams on hub lakes and within networks 
+
 Scripts that use GIS files reference directories on our system. You can find zipped GIS files in Data and adjust scripts accordingly.
+
+
 
