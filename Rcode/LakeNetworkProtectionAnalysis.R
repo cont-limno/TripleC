@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by protected status #######################################
 # Date: 4-26-21
-# updated: 6-17-21
+# updated: 6-22-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -160,7 +160,7 @@ ctr_grouped <- ggplot(prop_protection_grouped_ctr, aes(WSA9, Percent, fill=Prote
   ylab("% of network protected") +
   guides(fill = guide_legend(reverse=T)) +  
   #theme_bw() +
-  ggtitle('a) Network protection (lake centers)')+
+  ggtitle('(a) Network protection (lake centers)')+
   scale_y_continuous(limits=c(0,100), breaks=seq(0,100,20)) +
   #scale_x_discrete(labels=c('IS','HW','DRS','DRLS'))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -183,7 +183,7 @@ plot80pct_grouped <- ggplot(prop_protection_grouped_80pct, aes(WSA9, Percent, fi
   ylab("% of network protected") +
   guides(fill = guide_legend(reverse=T)) +  
   #theme_bw() +
-  ggtitle('c) Network protection (80% watershed)')+
+  ggtitle('(c) Network protection (80% watershed)')+
   scale_y_continuous(limits=c(0,100), breaks=seq(0,100,20)) +
   #scale_x_discrete(labels=c('IS','HW','DRS','DRLS'))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -297,7 +297,7 @@ stacked_ctr_plot <- ggplot(stacked_ctr_df, aes(fill=variable, y=value, x=WSA9)) 
   ylab("% of hub lakes protected") +
   guides(fill = guide_legend(reverse=T)) +  
   #theme_bw() +
-  ggtitle('b) Hub protection (lake centers)')+
+  ggtitle('(b) Hub protection (lake centers)')+
   scale_y_continuous(limits=c(0,100), breaks=seq(0,100,20)) +
   #scale_x_discrete(labels=c('IS','HW','DRS','DRLS'))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -321,7 +321,7 @@ stacked_80pct_plot <- ggplot(stacked_80pct_df, aes(fill=variable, y=value, x=WSA
   ylab("% of hub lakes protected") +
   guides(fill = guide_legend(reverse=T)) +  
   #theme_bw() +
-  ggtitle('d) Hub protection (80% watershed)')+
+  ggtitle('(d) Hub protection (80% watershed)')+
   scale_y_continuous(limits=c(0,100), breaks=seq(0,100,20)) +
   #scale_x_discrete(labels=c('IS','HW','DRS','DRLS'))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -339,7 +339,7 @@ stacked_80pct_plot <- ggplot(stacked_80pct_df, aes(fill=variable, y=value, x=WSA
   theme(legend.title=element_blank()) #remove legend title
 
 # combine boxplots of network protection and hub protection by ecoregion into multi-panel figure
-tiff('Figures/NetworkHubLakeProtectionByNARS.tif',width = 7.5,height = 7.5,units = 'in',res=300)
+tiff('Figures/NetworkHubLakeProtectionByNARS.tif',width = 7.6,height = 7.6,units = 'in',res=300)
   grid.arrange(ctr_grouped, stacked_ctr_plot, plot80pct_grouped, stacked_80pct_plot, nrow=2, ncol=2)
 dev.off()
 
