@@ -12,6 +12,8 @@ PADUS14: watershed lake protection from US Protected Areas Database v 1.4 (via L
 
 LAGOSUS_RSVR_v1.1_classes.csv: manual and residual neural network classifications of LAGOS lakes >= 4 hectares
 
+Metadata file for all data tables
+
 # Figures
 Folder for figures in the manuscript or exploratory figures
 
