@@ -1,10 +1,10 @@
 ###################### Connectivity scores for LAGOS-US-NETWORKS ###############################
 # Date: 5-4-21
-# updated: 6-17-21
+# updated: 9-7-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
-setwd("C:/Users/FWL/Documents/TripleC")
+setwd("C:/Users/immcc/Documents/TripleC")
 
 #### R libraries ####
 library(dplyr)
@@ -31,8 +31,8 @@ library(scales)
 # rivers in the conterminous U.S. Environmental Data Initiative. 
 # https://portal-s.edirepository.org/nis/mapbrowse?scope=edi&identifier=213. Dataset accessed XX/XX/2021.
 # 
-# King, K., Wang, Q., Rodriguez, L.K., and Cheruvelil, K.S. under review. Lake networks and connectivity metrics
-# for the conterminous U.S. (LAGOS-US NETWORKS v1). Limnology and Oceanography Letters. 
+# King, K., Wang, Q., Rodriguez, L.K., and Cheruvelil, K.S. 2021. Lake networks and connectivity metrics
+# for the conterminous U.S. (LAGOS-US NETWORKS v1). Limnology and Oceanography Letters. https://doi.org/10.1002/lol2.10204 
 
 lake_network_pts <- shapefile("C:/Ian_GIS/TripleC_GIS/Networks/LAGOS_1ha_pts_networks.shp")
 states_shp <- shapefile("Data/lower48/lower48.shp")
@@ -43,11 +43,33 @@ nets <- read.csv('Data/Networks/network_scale_metrics.csv')
 head(nets)
 str(nets)
 between_cent <- read.csv("Data/Networks/betweenness_out_full.csv")
+net_lakes <- read.csv("Data/Networks/nets_networkmetrics_medres_dams.csv")
+
+# get lake elevation data in LAGOS-US-LOCUS
+# Smith, N.J., K.E. Webster, L.K. Rodriguez, K.S. Cheruvelil, and P.A. Soranno. 2021. 
+# LAGOS-US LOCUS v1.0: Data module of location, identifiers, and physical characteristics of lakes and their watersheds in the conterminous U.S. ver 1. Environmental Data Initiative. https://doi.org/10.6073/pasta/e5c2fb8d77467d3f03de4667ac2173ca (Accessed 2021-09-07).
+lakeinfo <- read.csv("C:/Users/immcc/Dropbox/CL_LAGOSUS_exports/LAGOSUS_LOCUS/LOCUS_v1.0/lake_information.csv")
+
+lakeinfo_net <- subset(lakeinfo, lagoslakeid %in% net_lakes$lagoslakeid)
+lakeinfo_net <- lakeinfo_net[,c('lagoslakeid','lake_elevation_m')]
+
+net_lakes <- merge(net_lakes, lakeinfo_net, by='lagoslakeid')
+
+net_elevation <- net_lakes %>%
+  group_by(net_id) %>%
+  summarize(elev_m_max=max(lake_elevation_m, na.rm=T),
+            elev_m_min=min(lake_elevation_m, na.rm=T),
+            elev_m_sd=sd(lake_elevation_m, na.rm=T))
+net_elevation$elev_m_range <- net_elevation$elev_m_max-net_elevation$elev_m_min 
+hist(net_elevation$elev_m_sd)
+hist(net_elevation$elev_m_range)
+
+nets <- merge(nets, net_elevation, by='net_id')
 
 # Select network variables for analysis
 dat <- nets %>% 
   dplyr::select(net_id, edge_dens, artic_count, min_cut_lat, maxkmNS, net_lakes_n, net_averagelakedistance_km,
-                net_rangeorder, net_dams_n)
+                net_rangeorder, net_dams_n, elev_m_range)
 head(dat)
 
 # optionally add in betweenness centrality metric
@@ -148,7 +170,10 @@ cor(clus_dat)
 #write.csv(pca_conn_scores, file='Data/Networks/pca_network_conn_scores.csv')
 
 # ## PCA with Dam Rate variable
-pca_conn_DR <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct_inv + DamRate_inv + maxkmNS,
+# variables used in first submission
+#pca_conn_DR <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct_inv + DamRate_inv + maxkmNS,
+#                        data=clus_dat, cor=T, scores=T)
+pca_conn_DR <- princomp(~ edge_dens + min_cut_lat + net_averagelakedistance_km + vert_btwn_centr_norm_mean + artic_pct_inv + DamRate_inv + maxkmNS + elev_m_range,
                         data=clus_dat, cor=T, scores=T)
 par(mfrow=c(1,1))
 screeplot(pca_conn_DR, type='l')
@@ -167,8 +192,8 @@ fviz_pca_var(pca_conn_DR,
 library(relimp, pos = 4)
 library(paran)
 
-paran(clus_dat[c("edge_dens","min_cut_lat","net_lakes_n","vert_btwn_centr_norm_mean",
-                 "artic_pct_inv","DamRate_inv", "maxkmNS")], iterations = 5000, centile = 0, quietly = FALSE, 
+paran(clus_dat[c("edge_dens","min_cut_lat","net_averagelakedistance_km","vert_btwn_centr_norm_mean",
+                 "artic_pct_inv","DamRate_inv", "maxkmNS", "elev_m_range")], iterations = 5000, centile = 0, quietly = FALSE, 
       status = TRUE, all = TRUE, cfa = FALSE, graph = TRUE, color = TRUE, 
       col = c("black", "red", "blue"), lty = c(1, 2, 3), lwd = 1, legend = TRUE, 
       width = 640, height = 640, grdevice = "png", seed = 0)
@@ -213,6 +238,7 @@ pca_conn_DR_scores.point3 + geom_path(data=states_shp,aes(long,lat,group=group),
         axis.title = element_blank())
 
 #write.csv(pca_conn_DR_scores, file='Data/Networks/pca_network_conn_scores_wDamRate.csv')
+#write.csv(pca_conn_DR_scores, file='Data/Networks/pca_network_conn_scores_revised.csv')
 
 
 #### analyze protection vs conn scores
