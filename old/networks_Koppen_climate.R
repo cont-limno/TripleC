@@ -1,6 +1,6 @@
 ######################## Climate of LAGOS Networks #############################################
 # Date: 1-6-21
-# updated: 4-7-21
+# updated: 6-22-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -9,10 +9,10 @@ setwd("C:/Users/FWL/Documents/TripleC")
 #### R libraries ####
 
 #### Input data ####
-networks <- read.csv("Data/Networks/nets_networkmetrics_medres.csv") #export v1
+networks <- read.csv("Data/Networks/nets_networkmetrics_medres_dams.csv") #export v1
 climate_19812010 <- read.csv("C:/Users/FWL/Documents/ClimateExposure/Data/AdaptWest/AdaptWest_bioclim_1981_2010.csv")
 koppen_class <- read.csv("C:/Users/FWL/Documents/ClimateExposure/Data/AdaptWest/all_periods_class_only.csv")
-networks_geo <- read.csv("Data/Networks/lagosnet_geo.csv")
+networks_geo <- read.csv("Data/Networks/network_scale_metrics.csv")
 
 ######### Main program ###########
 # determine Koppen climate class change for each lagoslakeid

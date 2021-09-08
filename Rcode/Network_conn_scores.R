@@ -1,10 +1,11 @@
 ###################### Connectivity scores for LAGOS-US-NETWORKS ###############################
 # Date: 5-4-21
-# updated: 9-7-21
+# updated: 9-8-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
 setwd("C:/Users/immcc/Documents/TripleC")
+setwd("C:/Users/FWL/Documents/TripleC")
 
 #### R libraries ####
 library(dplyr)
@@ -49,6 +50,7 @@ net_lakes <- read.csv("Data/Networks/nets_networkmetrics_medres_dams.csv")
 # Smith, N.J., K.E. Webster, L.K. Rodriguez, K.S. Cheruvelil, and P.A. Soranno. 2021. 
 # LAGOS-US LOCUS v1.0: Data module of location, identifiers, and physical characteristics of lakes and their watersheds in the conterminous U.S. ver 1. Environmental Data Initiative. https://doi.org/10.6073/pasta/e5c2fb8d77467d3f03de4667ac2173ca (Accessed 2021-09-07).
 lakeinfo <- read.csv("C:/Users/immcc/Dropbox/CL_LAGOSUS_exports/LAGOSUS_LOCUS/LOCUS_v1.0/lake_information.csv")
+lakeinfo <- read.csv("C:/Users/FWL/Dropbox/CL_LAGOSUS_exports/LAGOSUS_LOCUS/LOCUS_v1.0/lake_information.csv")
 
 lakeinfo_net <- subset(lakeinfo, lagoslakeid %in% net_lakes$lagoslakeid)
 lakeinfo_net <- lakeinfo_net[,c('lagoslakeid','lake_elevation_m')]
@@ -173,6 +175,8 @@ cor(clus_dat)
 # variables used in first submission
 #pca_conn_DR <- princomp(~ edge_dens + min_cut_lat + net_lakes_n + vert_btwn_centr_norm_mean + artic_pct_inv + DamRate_inv + maxkmNS,
 #                        data=clus_dat, cor=T, scores=T)
+# revised set of variables: dropping net_lakes_n in favor of net_averagelakedistance_km (0.8 corr with net_lake_n anyway)
+# also adding elev_m_range: strongest corr is with maxkmNS (0.60)
 pca_conn_DR <- princomp(~ edge_dens + min_cut_lat + net_averagelakedistance_km + vert_btwn_centr_norm_mean + artic_pct_inv + DamRate_inv + maxkmNS + elev_m_range,
                         data=clus_dat, cor=T, scores=T)
 par(mfrow=c(1,1))
@@ -209,9 +213,9 @@ hist(pca_conn_DR_scores$PCconnall, main='Network connectivity scores')
 pca_conn_DR_scores$net_id <- rownames(clus_dat)
 
 # save nice conn score histogram
-tiff('Figures/conn_score_histogram_wDamRate.tif',width = 7,height = 5,units = 'in',res=300)
+tiff('Figures/conn_score_histogram_wDamRate_revised.tif',width = 7,height = 5,units = 'in',res=300)
 hist(pca_conn_DR_scores$PCconnall, main='Network connectivity scores',
-     xlab='Score', las=1, breaks=seq(0,10,1), cex.main=1.5, cex.lab=1, cex.axis=1,
+     xlab='Score', las=1, breaks=seq(0,13,1), cex.main=1.5, cex.lab=1, cex.axis=1, xlim=c(0,14),
      col=c('khaki','khaki','mediumseagreen','mediumseagreen',
            'dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3','dodgerblue3'))
 dev.off()
