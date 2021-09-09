@@ -471,7 +471,7 @@ test2 <- merge(test2, networks_NARS[,c(1:2)], by='net_id', all=F)
 test2 <- merge(test2, pca_Scores, by='net_id', all=F)
 
 # final merging
-layover <- conn_protection[,c(1,11:14)]
+layover <- conn_protection[,c(1,12:15)]
 colnames(layover) <- c('net_id','net_GAP12_ctr_pct','net_GAP123_ctr_pct','net_GAP12_80pct_pct','net_GAP123_80pct_pct')
 money_table <- merge(test2, layover, by='net_id', all=F)
 
