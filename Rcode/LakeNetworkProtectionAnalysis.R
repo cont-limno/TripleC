@@ -1,6 +1,6 @@
 ############# Analyze LAGOS networks by protected status #######################################
 # Date: 4-26-21
-# updated: 6-22-21
+# updated: 9-9-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -39,9 +39,7 @@ network_lakes_NARS_nonMS <- read.csv("Data/Networks/nLakes_networks_NARS_nonMS.c
 # King, K., Wang, Q., Rodriguez, L.K., and Cheruvelil, K.S. under review. Lake networks and connectivity metrics
 # for the conterminous U.S. (LAGOS-US NETWORKS v1). Limnology and Oceanography Letters. 
 #
-# PADUS v 1.4 (2.0 exists but using 1.4 because that is in LAGOS-US-GEO)
-# US Geological Survey (USGS) Gap Analysis Program (GAP), 20160505, Protected Areas Database of the United States (PAD-US): 
-# USGS Gap Analysis Program (GAP), https://doi.org/10.5066/F7G73BSZ. 
+# PADUS v2.0 because that is in LAGOS-US-GEO
 
 #### Main program ####
 # get lagoslakeids of protected lakes by different status
@@ -166,8 +164,8 @@ ctr_grouped <- ggplot(prop_protection_grouped_ctr, aes(WSA9, Percent, fill=Prote
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"))+
   #theme(axis.text.x=element_text(angle=50, hjust=1))+ #tilt axis labels
-  geom_hline(yintercept=17, linetype='dotted', color='black')+
-  geom_hline(yintercept=30, linetype='dashed', color='black')+
+  geom_hline(yintercept=17, linetype='dashed', color='black')+
+  #geom_hline(yintercept=30, linetype='dashed', color='black')+
   theme(axis.title.y = element_text(vjust=2.7, color='black'))+ #nudge y axis label away from axis a bit
   scale_fill_manual("legend", values = c("GAP123_ctr_pct" = "navajowhite2", "GAP12_ctr_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
                     labels=c('Strict','Multi-use'))+
@@ -189,8 +187,8 @@ plot80pct_grouped <- ggplot(prop_protection_grouped_80pct, aes(WSA9, Percent, fi
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"))+
   #theme(axis.text.x=element_text(angle=50, hjust=1))+ #tilt axis labels
-  geom_hline(yintercept=17, linetype='dotted', color='black')+
-  geom_hline(yintercept=30, linetype='dashed', color='black')+
+  geom_hline(yintercept=17, linetype='dashed', color='black')+
+  #geom_hline(yintercept=30, linetype='dashed', color='black')+
   theme(axis.title.y = element_text(vjust=2.7, color='black'))+ #nudge y axis label away from axis a bit
   scale_fill_manual("legend", values = c("GAP123_80pct_pct" = "navajowhite2", "GAP12_80pct_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
                     labels=c('Strict','Multi-use'))+
@@ -303,8 +301,8 @@ stacked_ctr_plot <- ggplot(stacked_ctr_df, aes(fill=variable, y=value, x=WSA9)) 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"))+
   #theme(axis.text.x=element_text(angle=50, hjust=1))+ #tilt axis labels
-  geom_hline(yintercept=17, linetype='dotted', color='black')+
-  geom_hline(yintercept=30, linetype='dashed', color='black')+
+  geom_hline(yintercept=17, linetype='dashed', color='black')+
+  #geom_hline(yintercept=30, linetype='dashed', color='black')+
   theme(axis.title.y = element_text(vjust=2.7, color='black'))+ #nudge y axis label away from axis a bit
   scale_fill_manual("legend", values = c("GAP123_ctr_pct" = "navajowhite2", "GAP12_ctr_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
                     labels=c('Strict','Strict + Multi-use'))+
@@ -327,8 +325,8 @@ stacked_80pct_plot <- ggplot(stacked_80pct_df, aes(fill=variable, y=value, x=WSA
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"))+
   #theme(axis.text.x=element_text(angle=50, hjust=1))+ #tilt axis labels
-  geom_hline(yintercept=17, linetype='dotted', color='black')+
-  geom_hline(yintercept=30, linetype='dashed', color='black')+
+  geom_hline(yintercept=17, linetype='dashed', color='black')+
+  #geom_hline(yintercept=30, linetype='dashed', color='black')+
   theme(axis.title.y = element_text(vjust=2.7, color='black'))+ #nudge y axis label away from axis a bit
   scale_fill_manual("legend", values = c("GAP123_80pct_pct" = "navajowhite2", "GAP12_80pct_pct" = "olivedrab3"),#,"Unprotected" = "gray70"),
                     labels=c('Strict','Multi-use'))+
