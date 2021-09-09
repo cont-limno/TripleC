@@ -25,6 +25,7 @@ GAP123_lakes_net80 <- shapefile("C:/Ian_GIS/TripleC_GIS/ProtectedLakes/GAP123_la
 hub_lakes <- read.csv("Data/Networks/Hub_lakes_withMS.csv") #all hubs
 between_cent <- read.csv("Data/Networks/betweenness_out_full.csv")
 network_lakes_NARS_nonMS <- read.csv("Data/Networks/nLakes_networks_NARS_nonMS.csv")
+net_lakes <- read.csv("Data/Networks/nets_networkmetrics_medres_dams.csv")
 
 # Original data sources and resources:
 # Cheruvelil, K. S., Soranno, P. A., McCullough, I. M., Webster, K. E., Rodriguez, L. and N. J. Smith. 
@@ -40,6 +41,24 @@ network_lakes_NARS_nonMS <- read.csv("Data/Networks/nLakes_networks_NARS_nonMS.c
 # for the conterminous U.S. (LAGOS-US NETWORKS v1). Limnology and Oceanography Letters. 
 #
 # PADUS v2.0 because that is in LAGOS-US-GEO
+
+# get lake elevation data in LAGOS-US-LOCUS
+# Smith, N.J., K.E. Webster, L.K. Rodriguez, K.S. Cheruvelil, and P.A. Soranno. 2021. 
+# LAGOS-US LOCUS v1.0: Data module of location, identifiers, and physical characteristics of lakes and their watersheds in the conterminous U.S. ver 1. Environmental Data Initiative. https://doi.org/10.6073/pasta/e5c2fb8d77467d3f03de4667ac2173ca (Accessed 2021-09-07).
+lakeinfo <- read.csv("C:/Users/immcc/Dropbox/CL_LAGOSUS_exports/LAGOSUS_LOCUS/LOCUS_v1.0/lake_information.csv")
+lakeinfo <- read.csv("C:/Users/FWL/Dropbox/CL_LAGOSUS_exports/LAGOSUS_LOCUS/LOCUS_v1.0/lake_information.csv")
+
+lakeinfo_net <- subset(lakeinfo, lagoslakeid %in% net_lakes$lagoslakeid)
+lakeinfo_net <- lakeinfo_net[,c('lagoslakeid','lake_elevation_m')]
+
+net_lakes <- merge(net_lakes, lakeinfo_net, by='lagoslakeid')
+
+net_elevation <- net_lakes %>%
+  group_by(net_id) %>%
+  summarize(elev_m_max=max(lake_elevation_m, na.rm=T),
+            elev_m_min=min(lake_elevation_m, na.rm=T),
+            elev_m_sd=sd(lake_elevation_m, na.rm=T))
+net_elevation$elev_m_range <- net_elevation$elev_m_max-net_elevation$elev_m_min 
 
 #### Main program ####
 # get lagoslakeids of protected lakes by different status
@@ -350,6 +369,7 @@ dat <- netricks %>%
 
 # optionally add in betweenness centrality metric
 dat <- merge(dat, between_cent[,c(1,4)], by='net_id')
+dat <- merge(dat, net_elevation[,c(1,5)], by='net_id')
 
 # Remove 1 NA value
 dat <- dat %>% filter(!is.na(maxkmNS))
@@ -379,7 +399,7 @@ cormat <- as.data.frame(cor(conn_protection[2:14], use='pairwise.complete.obs',m
 
 ## Relationship between network connectivity scores and hub lakes
 # analysis of both networks with just high scores and all networks with scores
-pca_Scores <- read.csv("Data/Networks/pca_network_conn_scores_wDamRate.csv")[,c(9,10)]
+pca_Scores <- read.csv("Data/Networks/pca_network_conn_scores_revised.csv")[,c(10,11)]
 
 pca_Scores_hubs <- merge(hub_lakes_NARS[,c(1:2)], pca_Scores, by='net_id', all=T)
 length(unique(pca_Scores_hubs$net_id))
@@ -455,7 +475,7 @@ layover <- conn_protection[,c(1,11:14)]
 colnames(layover) <- c('net_id','net_GAP12_ctr_pct','net_GAP123_ctr_pct','net_GAP12_80pct_pct','net_GAP123_80pct_pct')
 money_table <- merge(test2, layover, by='net_id', all=F)
 
-#write.csv(money_table, file='Data/Networks/network_hub_protection_and_scores.csv', row.names=F)
+#write.csv(money_table, file='Data/Networks/network_hub_protection_and_scores_revised.csv', row.names=F)
 
 # exploratory analysis of network connectivity scores, hubs and network variables
 #par(mfrow=c(2,2))
