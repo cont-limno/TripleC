@@ -1,6 +1,6 @@
 ###################### Connectivity scores for LAGOS-US-NETWORKS ###############################
 # Date: 5-4-21
-# updated: 9-8-21
+# updated: 9-9-21
 # Author: Ian McCullough, immccull@gmail.com
 ################################################################################################
 
@@ -257,7 +257,10 @@ plot(protection_pca$GAP123_ctr_pct ~ protection_pca$PCconnall)
 plot(protection_pca$GAP12_80pct_pct ~ protection_pca$PCconnall)
 plot(protection_pca$GAP123_80pct_pct ~ protection_pca$PCconnall)
 
-cor(protection_pca[,c(7:10, 18:19)])
+cor.test(log(protection_pca$PCconnall), protection_pca$GAP12_ctr_pct, method='pearson')
+cor.test(log(protection_pca$PCconnall), protection_pca$GAP123_ctr_pct, method='pearson')
+cor.test(log(protection_pca$PCconnall), protection_pca$GAP12_80pct_pct, method='pearson')
+cor.test(log(protection_pca$PCconnall), protection_pca$GAP123_80pct_pct, method='pearson')
 
 # # same analysis with PCA with DamRate variable
 # protection_pca <- merge(protection, pca_conn_DR_scores, by='net_id', all=F)
