@@ -8,7 +8,7 @@ lower48: polygon shapefile of lower 48 US states (conterminous US)
 
 Networks: input and output tables related to freshwater networks, GIS point shapefiles of network lakes
 
-PADUS14: watershed lake protection from US Protected Areas Database v 1.4 (via LAGOS-US-GEO)
+PADUS14: watershed lake protection from US Protected Areas Database v 2.0 (via LAGOS-US-GEO)
 
 LAGOSUS_RSVR_v1.1_classes.csv: manual and residual neural network classifications of LAGOS lakes >= 4 hectares
 
