@@ -1,7 +1,7 @@
 # TripleC
 Connectivity, climate and conservation
 
-This readme is an overview of the contents of this directory. Subdirectories contain additional readme and metadata files where relevant. 
+This repository contains data and code associated with the manuscript Freshwater corridor in the conterminous US: a coarse-filter approach based on lake-stream networks, which was accepted in the open-access journal Ecosphere at the time of publishing this repository. This readme is an overview of the contents of this repository. Subdirectories contain additional readme and metadata files where relevant. 
 
 # Data
 lower48: polygon shapefile of lower 48 US states (conterminous US)
