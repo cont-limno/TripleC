@@ -21,6 +21,8 @@ Folder for figures in the manuscript or exploratory figures
 Folder for manuscript documents
 
 # Rcode
+dam_summaries.R: summaries of dams on hub lakes and within networks 
+
 LakeNetworkProtectionAnalysis.R: analysis of protection of lakes and networks in the conterminous US, freshwater connectivity and hub lakes
 
 LakeProtection.R: statistics on lake protection in the conterminous US
@@ -30,8 +32,6 @@ Network_conn_scores.R: principal components analysis used to calculate network c
 Networks_analyze_ecoregion.R: network statistics by National Aquatic Resource Survey ecoregions 
 
 Networks_assign_ecoregion.R: assign networks to National Aquatic Resource Survey ecoregions 
-
-dam_summaries.R: summaries of dams on hub lakes and within networks 
 
 Scripts that use GIS files reference directories on our system. You can find zipped GIS files in Data and adjust scripts accordingly.
 
