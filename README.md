@@ -18,7 +18,7 @@ Metadata file for all data tables
 Folder for figures in the manuscript or exploratory figures
 
 # MS_materials
-Folder for manuscript documents
+Folder for manuscript documents, including submitted and accepted documents. May have slight differences from final publication.
 
 # Rcode
 dam_summaries.R: summaries of dams on hub lakes and within networks 
